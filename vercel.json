@@ -1,4 +1,5 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "outputDirectory": "public",
   "functions": {
@@ -29,15 +30,20 @@
     }
   ],
   "env": {
+    "APP_NAME": "GST Flow",
     "APP_ENV": "production",
     "APP_DEBUG": "false",
+    "APP_URL": "https://gst-flow-manager.vercel.app",
     "APP_CONFIG_CACHE": "/tmp/config.php",
     "APP_EVENTS_CACHE": "/tmp/events.php",
     "APP_PACKAGES_CACHE": "/tmp/packages.php",
     "APP_ROUTES_CACHE": "/tmp/routes.php",
     "VIEW_COMPILED_PATH": "/tmp",
     "CACHE_STORE": "array",
+    "QUEUE_CONNECTION": "sync",
     "SESSION_DRIVER": "cookie",
+    "FILESYSTEM_DISK": "local",
+    "DB_CONNECTION": "mongodb",
     "LOG_CHANNEL": "stderr"
   }
 }

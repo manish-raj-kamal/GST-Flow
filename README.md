@@ -7,6 +7,10 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## GST Flow Deployment
+
+The Vercel deployment requires runtime environment variables that are not committed to Git, especially `APP_KEY` and `MONGODB_URI`. See [DEPLOYMENT.md](DEPLOYMENT.md) before redeploying.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
