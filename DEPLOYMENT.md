@@ -17,7 +17,7 @@ MONGODB_URI=mongodb+srv://...
 php artisan key:generate --show
 ```
 
-The checked-in `vercel.json` already provides the non-secret defaults for the Vercel runtime, including `APP_ENV`, cache paths under `/tmp`, cookie sessions, and `DB_CONNECTION=mongodb`.
+The checked-in `vercel.json` already provides the non-secret defaults for the Vercel runtime, including `APP_ENV`, Laravel cache paths under `/tmp`, cookie sessions, and `DB_CONNECTION=mongodb`.
 
 After adding or changing environment variables in Vercel, trigger a new deployment. Vercel only applies environment variable changes to new deployments.
 
