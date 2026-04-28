@@ -19,17 +19,40 @@ class DatabaseSeeder extends Seeder
         // Seed GST reference data (tax slabs, state codes, HSN codes)
         $this->call(GstDataSeeder::class);
 
-        // Create default admin user if none exists
-        if (User::where('role', 'admin')->count() === 0) {
-            User::create([
+        $testUsers = [
+            [
                 'name' => 'Admin',
                 'email' => 'admin@gstplatform.com',
-                'password' => Hash::make('admin123'),
+                'password' => 'admin123',
                 'role' => 'admin',
-                'is_active' => true,
-                'email_verified_at' => now(),
-            ]);
-            $this->command->info('✅ Default admin user created (admin@gstplatform.com / admin123)');
+            ],
+            [
+                'name' => 'Demo Business User',
+                'email' => 'demo@gstplatform.com',
+                'password' => 'demo123',
+                'role' => 'business_user',
+            ],
+            [
+                'name' => 'Demo Manager',
+                'email' => 'manager@gstplatform.com',
+                'password' => 'manager123',
+                'role' => 'business_user',
+            ],
+        ];
+
+        foreach ($testUsers as $testUser) {
+            User::firstOrCreate(
+                ['email' => $testUser['email']],
+                [
+                    'name' => $testUser['name'],
+                    'password' => Hash::make($testUser['password']),
+                    'role' => $testUser['role'],
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                ]
+            );
         }
+
+        $this->command->info('Test login users are available: admin@gstplatform.com, demo@gstplatform.com, manager@gstplatform.com.');
     }
 }

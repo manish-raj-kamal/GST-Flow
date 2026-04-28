@@ -1,7 +1,10 @@
 <x-guest-layout :colorScheme="'emerald'" :pageTitle="'Create Account — ' . config('app.name')">
 
-    <h2 style="font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px;">Create your account</h2>
-    <p style="font-size: 14px; color: rgba(255,255,255,0.45); margin-bottom: 28px;">Start managing GST compliance for free</p>
+    <div class="auth-header">
+        <p class="auth-kicker">New workspace</p>
+        <h2 class="auth-title">Create your account</h2>
+        <p class="auth-subtitle">Set up access for GST invoices, reports, and validation.</p>
+    </div>
 
     {{-- Google Sign-Up (client-side, no client_secret needed) --}}
     <div id="g_id_onload"
@@ -9,62 +12,81 @@
          data-callback="handleGoogleCredential"
          data-auto_prompt="false">
     </div>
-    <div class="g_id_signin"
-         data-type="standard"
-         data-shape="rectangular"
-         data-theme="filled_black"
-         data-text="signup_with"
-         data-size="large"
-         data-width="360"
-         style="margin-bottom: 12px; display: flex; justify-content: center;">
+    <div class="auth-google-wrap">
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="signup_with"
+             data-size="large"
+             data-width="360">
+        </div>
     </div>
 
-    <div class="auth-divider">or register with email</div>
+    <div class="auth-divider"><span>or use email</span></div>
 
     {{-- Tabs: Password / OTP --}}
-    <div x-data="{ mode: 'password', otpSent: false, otpLoading: false, timer: 0 }">
+    <div x-data="{ mode: 'password', otpSent: false, otpLoading: false, timer: 0 }" class="auth-flow">
 
-        <div style="display: flex; gap: 4px; padding: 3px; border-radius: 10px; background: rgba(255,255,255,0.06); margin-bottom: 20px;">
-            <button type="button" @click="mode = 'password'" :style="mode === 'password' ? 'background: rgba(255,255,255,0.12); color: #fff;' : 'background: transparent; color: rgba(255,255,255,0.4);'" style="flex: 1; padding: 8px; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 150ms;">With Password</button>
-            <button type="button" @click="mode = 'otp'" :style="mode === 'otp' ? 'background: rgba(255,255,255,0.12); color: #fff;' : 'background: transparent; color: rgba(255,255,255,0.4);'" style="flex: 1; padding: 8px; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 150ms;">With OTP</button>
+        <div class="auth-tabs" role="tablist" aria-label="Registration method">
+            <button type="button"
+                class="auth-tab"
+                :class="{ 'is-active': mode === 'password' }"
+                :aria-selected="(mode === 'password').toString()"
+                @click="mode = 'password'">
+                Password
+            </button>
+            <button type="button"
+                class="auth-tab"
+                :class="{ 'is-active': mode === 'otp' }"
+                :aria-selected="(mode === 'otp').toString()"
+                @click="mode = 'otp'">
+                Email OTP
+            </button>
         </div>
 
         {{-- Password Registration --}}
-        <form method="POST" action="{{ route('register') }}" x-show="mode === 'password'" x-transition>
+        <form method="POST" action="{{ route('register') }}" x-show="mode === 'password'" x-transition class="auth-form">
             @csrf
-            <div style="margin-bottom: 14px;">
-                <label class="auth-label">Full Name</label>
-                <input type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" placeholder="John Doe">
+            <div class="auth-field">
+                <label class="auth-label" for="register_name">Full name</label>
+                <input id="register_name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" placeholder="John Doe">
                 @error('name') <div class="auth-error">{{ $message }}</div> @enderror
             </div>
-            <div style="margin-bottom: 14px;">
-                <label class="auth-label">Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="you@company.com">
+
+            <div class="auth-field">
+                <label class="auth-label" for="register_email">Email</label>
+                <input id="register_email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="you@company.com">
                 @error('email') <div class="auth-error">{{ $message }}</div> @enderror
             </div>
-            <div style="margin-bottom: 14px;">
-                <label class="auth-label">Password</label>
-                <input type="password" name="password" required autocomplete="new-password" placeholder="Min. 8 characters">
+
+            <div class="auth-field">
+                <label class="auth-label" for="register_password">Password</label>
+                <input id="register_password" type="password" name="password" required autocomplete="new-password" placeholder="Minimum 8 characters">
                 @error('password') <div class="auth-error">{{ $message }}</div> @enderror
             </div>
-            <div style="margin-bottom: 20px;">
-                <label class="auth-label">Confirm Password</label>
-                <input type="password" name="password_confirmation" required autocomplete="new-password" placeholder="Repeat password">
+
+            <div class="auth-field">
+                <label class="auth-label" for="register_password_confirmation">Confirm password</label>
+                <input id="register_password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" placeholder="Repeat password">
             </div>
-            <button type="submit" class="auth-btn">Create Account</button>
+
+            <button type="submit" class="auth-btn">Create account</button>
         </form>
 
         {{-- OTP Registration --}}
-        <form method="POST" action="{{ url('/auth/otp/verify') }}" x-show="mode === 'otp'" x-transition>
+        <form method="POST" action="{{ url('/auth/otp/verify') }}" x-show="mode === 'otp'" x-transition class="auth-form">
             @csrf
             <input type="hidden" name="register" value="1">
-            <div style="margin-bottom: 14px;">
-                <label class="auth-label">Full Name</label>
-                <input type="text" name="name" required placeholder="John Doe" value="{{ old('name') }}">
+
+            <div class="auth-field">
+                <label class="auth-label" for="register_otp_name">Full name</label>
+                <input id="register_otp_name" type="text" name="name" required placeholder="John Doe" value="{{ old('name') }}">
             </div>
-            <div style="margin-bottom: 14px;">
-                <label class="auth-label">Email</label>
-                <input type="email" name="email" x-ref="otpEmail" required placeholder="you@company.com" value="{{ old('email') }}">
+
+            <div class="auth-field">
+                <label class="auth-label" for="register_otp_email">Email</label>
+                <input id="register_otp_email" type="email" name="email" x-ref="otpEmail" required placeholder="you@company.com" value="{{ old('email') }}">
                 @error('email') <div class="auth-error">{{ $message }}</div> @enderror
             </div>
 
@@ -82,20 +104,22 @@
                     }).catch(()=>{ otpLoading = false; alert('Network error'); })
                 ">
                     <span x-show="!otpLoading">Send OTP</span>
-                    <span x-show="otpLoading">Sending…</span>
+                    <span x-show="otpLoading">Sending...</span>
                 </button>
             </template>
 
             <template x-if="otpSent">
-                <div>
-                    <div style="margin-bottom: 16px;">
-                        <label class="auth-label">Enter OTP</label>
-                        <input type="text" name="otp" maxlength="6" placeholder="6-digit code" style="letter-spacing: 0.3em; text-align: center; font-size: 20px; font-weight: 600;" required>
+                <div class="auth-form">
+                    <div class="auth-field">
+                        <label class="auth-label" for="register_otp_code">Enter OTP</label>
+                        <input id="register_otp_code" class="auth-code-input" type="text" name="otp" maxlength="6" inputmode="numeric" placeholder="000000" required>
                         @error('otp') <div class="auth-error">{{ $message }}</div> @enderror
                     </div>
-                    <button type="submit" class="auth-btn" style="margin-bottom: 12px;">Verify & Create Account</button>
-                    <div style="text-align: center;">
-                        <button type="button" class="auth-link" style="border: none; background: none; cursor: pointer;" :disabled="timer > 0" @click="
+
+                    <button type="submit" class="auth-btn">Verify and create account</button>
+
+                    <div class="auth-resend">
+                        <button type="button" class="auth-text-button" :disabled="timer > 0" @click="
                             fetch('/auth/otp/send', {
                                 method: 'POST',
                                 headers: {'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}','Accept':'application/json'},
@@ -110,9 +134,9 @@
         </form>
     </div>
 
-    <div style="text-align: center; margin-top: 24px;">
-        <span style="font-size: 13px; color: rgba(255,255,255,0.35);">Already have an account?</span>
-        <a href="{{ route('login') }}" class="auth-link" style="margin-left: 4px;">Sign in</a>
+    <div class="auth-switch">
+        <span>Already have an account?</span>
+        <a href="{{ route('login') }}" class="auth-link">Sign in</a>
     </div>
 
     {{-- Google Sign-In Script --}}

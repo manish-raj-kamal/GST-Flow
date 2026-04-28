@@ -16,7 +16,26 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased" x-data="{ sidebarOpen: false }">
+    <body class="font-sans antialiased"
+        x-data="{
+            sidebarOpen: false,
+            sidebarCollapsed: false,
+            init() {
+                try {
+                    this.sidebarCollapsed = localStorage.getItem('gst-sidebar-collapsed') === 'true';
+                } catch (e) {
+                    this.sidebarCollapsed = false;
+                }
+            },
+            toggleSidebarCollapsed() {
+                this.sidebarCollapsed = !this.sidebarCollapsed;
+
+                try {
+                    localStorage.setItem('gst-sidebar-collapsed', this.sidebarCollapsed);
+                } catch (e) {}
+            },
+        }"
+        :class="{ 'is-sidebar-collapsed': sidebarCollapsed }">
 
         {{-- Mobile sidebar overlay --}}
         <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="sidebar-overlay"></div>

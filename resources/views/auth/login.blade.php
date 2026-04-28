@@ -1,7 +1,10 @@
 <x-guest-layout :colorScheme="'indigo'" :pageTitle="'Sign In — ' . config('app.name')">
 
-    <h2 style="font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px;">Welcome back</h2>
-    <p style="font-size: 14px; color: rgba(255,255,255,0.45); margin-bottom: 28px;">Sign in to your GST dashboard</p>
+    <div class="auth-header">
+        <p class="auth-kicker">Account access</p>
+        <h2 class="auth-title">Welcome back</h2>
+        <p class="auth-subtitle">Sign in to continue to your dashboard.</p>
+    </div>
 
     {{-- Google Sign-In (client-side, no client_secret needed) --}}
     <div id="g_id_onload"
@@ -9,63 +12,132 @@
          data-callback="handleGoogleCredential"
          data-auto_prompt="false">
     </div>
-    <div class="g_id_signin"
-         data-type="standard"
-         data-shape="rectangular"
-         data-theme="filled_black"
-         data-text="continue_with"
-         data-size="large"
-         data-width="360"
-         style="margin-bottom: 12px; display: flex; justify-content: center;">
+    <div class="auth-google-wrap">
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="continue_with"
+             data-size="large"
+             data-width="360">
+        </div>
     </div>
 
-    <div class="auth-divider">or sign in with email</div>
+    <div class="auth-divider"><span>or use email</span></div>
 
     {{-- Session Status --}}
     @if (session('status'))
-        <div style="padding: 12px; border-radius: 10px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; font-size: 13px; margin-bottom: 16px;">
+        <div class="auth-status">
             {{ session('status') }}
         </div>
     @endif
 
     {{-- Tabs: Password / OTP --}}
-    <div x-data="{ mode: 'password', otpSent: false, otpLoading: false, timer: 0 }">
+    <div x-data="{
+        mode: 'password',
+        otpSent: false,
+        otpLoading: false,
+        timer: 0,
+        testLogin(email, password) {
+            this.mode = 'password';
+            this.$nextTick(() => {
+                this.$refs.passwordEmail.value = email;
+                this.$refs.passwordInput.value = password;
+                if (this.$refs.passwordForm.requestSubmit) {
+                    this.$refs.passwordForm.requestSubmit();
+                    return;
+                }
 
-        <div style="display: flex; gap: 4px; padding: 3px; border-radius: 10px; background: rgba(255,255,255,0.06); margin-bottom: 20px;">
-            <button type="button" @click="mode = 'password'" :style="mode === 'password' ? 'background: rgba(255,255,255,0.12); color: #fff;' : 'background: transparent; color: rgba(255,255,255,0.4);'" style="flex: 1; padding: 8px; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 150ms;">Password</button>
-            <button type="button" @click="mode = 'otp'" :style="mode === 'otp' ? 'background: rgba(255,255,255,0.12); color: #fff;' : 'background: transparent; color: rgba(255,255,255,0.4);'" style="flex: 1; padding: 8px; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 150ms;">Email OTP</button>
+                this.$refs.passwordForm.submit();
+            });
+        },
+    }" class="auth-flow">
+
+        <div class="auth-test-logins">
+            <div>
+                <p class="auth-test-title">Test logins</p>
+                <p class="auth-test-copy">Jump into a seeded account.</p>
+            </div>
+
+            <div class="auth-test-grid">
+                <button type="button" class="auth-test-button" @click="testLogin('admin@gstplatform.com', 'admin123')">
+                    <span class="auth-test-avatar">AD</span>
+                    <span>
+                        <strong>Admin</strong>
+                        <small>admin@gstplatform.com</small>
+                    </span>
+                </button>
+
+                <button type="button" class="auth-test-button" @click="testLogin('demo@gstplatform.com', 'demo123')">
+                    <span class="auth-test-avatar">BU</span>
+                    <span>
+                        <strong>Business User</strong>
+                        <small>demo@gstplatform.com</small>
+                    </span>
+                </button>
+
+                <button type="button" class="auth-test-button" @click="testLogin('manager@gstplatform.com', 'manager123')">
+                    <span class="auth-test-avatar">MG</span>
+                    <span>
+                        <strong>Manager</strong>
+                        <small>manager@gstplatform.com</small>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <div class="auth-tabs" role="tablist" aria-label="Sign in method">
+            <button type="button"
+                class="auth-tab"
+                :class="{ 'is-active': mode === 'password' }"
+                :aria-selected="(mode === 'password').toString()"
+                @click="mode = 'password'">
+                Password
+            </button>
+            <button type="button"
+                class="auth-tab"
+                :class="{ 'is-active': mode === 'otp' }"
+                :aria-selected="(mode === 'otp').toString()"
+                @click="mode = 'otp'">
+                Email OTP
+            </button>
         </div>
 
         {{-- Password Login --}}
-        <form method="POST" action="{{ route('login') }}" x-show="mode === 'password'" x-transition>
+        <form method="POST" action="{{ route('login') }}" x-show="mode === 'password'" x-transition class="auth-form" x-ref="passwordForm">
             @csrf
-            <div style="margin-bottom: 16px;">
-                <label class="auth-label">Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="you@company.com">
+            <div class="auth-field">
+                <label class="auth-label" for="login_email">Email</label>
+                <input id="login_email" type="email" name="email" x-ref="passwordEmail" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="you@company.com">
                 @error('email') <div class="auth-error">{{ $message }}</div> @enderror
             </div>
-            <div style="margin-bottom: 16px;">
-                <label class="auth-label">Password</label>
-                <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+
+            <div class="auth-field">
+                <label class="auth-label" for="login_password">Password</label>
+                <input id="login_password" type="password" name="password" x-ref="passwordInput" required autocomplete="current-password" placeholder="Enter your password">
                 @error('password') <div class="auth-error">{{ $message }}</div> @enderror
             </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.45); cursor: pointer;">
-                    <input type="checkbox" name="remember" style="accent-color: #818cf8;"> Remember me
+
+            <div class="auth-row">
+                <label class="auth-remember">
+                    <input type="checkbox" name="remember">
+                    <span>Remember me</span>
                 </label>
+
                 @if (Route::has('password.request'))
                     <a href="{{ route('password.request') }}" class="auth-link">Forgot password?</a>
                 @endif
             </div>
-            <button type="submit" class="auth-btn">Sign In</button>
+
+            <button type="submit" class="auth-btn">Sign in</button>
         </form>
 
         {{-- OTP Login --}}
-        <form method="POST" action="{{ url('/auth/otp/verify') }}" x-show="mode === 'otp'" x-transition>
+        <form method="POST" action="{{ url('/auth/otp/verify') }}" x-show="mode === 'otp'" x-transition class="auth-form">
             @csrf
-            <div style="margin-bottom: 16px;">
-                <label class="auth-label">Email</label>
-                <input type="email" name="email" x-ref="otpEmail" required placeholder="you@company.com" value="{{ old('email') }}">
+            <div class="auth-field">
+                <label class="auth-label" for="login_otp_email">Email</label>
+                <input id="login_otp_email" type="email" name="email" x-ref="otpEmail" required placeholder="you@company.com" value="{{ old('email') }}">
                 @error('email') <div class="auth-error">{{ $message }}</div> @enderror
             </div>
 
@@ -83,20 +155,22 @@
                     }).catch(()=>{ otpLoading = false; alert('Network error'); })
                 ">
                     <span x-show="!otpLoading">Send OTP</span>
-                    <span x-show="otpLoading">Sending…</span>
+                    <span x-show="otpLoading">Sending...</span>
                 </button>
             </template>
 
             <template x-if="otpSent">
-                <div>
-                    <div style="margin-bottom: 16px;">
-                        <label class="auth-label">Enter OTP</label>
-                        <input type="text" name="otp" maxlength="6" placeholder="6-digit code" style="letter-spacing: 0.3em; text-align: center; font-size: 20px; font-weight: 600;" required>
+                <div class="auth-form">
+                    <div class="auth-field">
+                        <label class="auth-label" for="login_otp_code">Enter OTP</label>
+                        <input id="login_otp_code" class="auth-code-input" type="text" name="otp" maxlength="6" inputmode="numeric" placeholder="000000" required>
                         @error('otp') <div class="auth-error">{{ $message }}</div> @enderror
                     </div>
-                    <button type="submit" class="auth-btn" style="margin-bottom: 12px;">Verify & Sign In</button>
-                    <div style="text-align: center;">
-                        <button type="button" class="auth-link" style="border: none; background: none; cursor: pointer;" :disabled="timer > 0" @click="
+
+                    <button type="submit" class="auth-btn">Verify and sign in</button>
+
+                    <div class="auth-resend">
+                        <button type="button" class="auth-text-button" :disabled="timer > 0" @click="
                             fetch('/auth/otp/send', {
                                 method: 'POST',
                                 headers: {'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}','Accept':'application/json'},
@@ -111,9 +185,9 @@
         </form>
     </div>
 
-    <div style="text-align: center; margin-top: 24px;">
-        <span style="font-size: 13px; color: rgba(255,255,255,0.35);">Don't have an account?</span>
-        <a href="{{ route('register') }}" class="auth-link" style="margin-left: 4px;">Create one</a>
+    <div class="auth-switch">
+        <span>Don't have an account?</span>
+        <a href="{{ route('register') }}" class="auth-link">Create one</a>
     </div>
 
     {{-- Google Sign-In Script --}}
