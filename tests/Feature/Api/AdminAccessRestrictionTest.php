@@ -49,5 +49,24 @@ class AdminAccessRestrictionTest extends TestCase
         $this->putJson('/api/admin/users/'.$realUser->id.'/role', ['role' => 'admin'])
             ->assertForbidden();
     }
+
+    public function test_admin_cannot_deactivate_self(): void
+    {
+        $admin = User::factory()->create([
+            'email' => 'owner@example.com',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $this->putJson('/api/admin/users/'.$admin->id.'/toggle-status')
+            ->assertStatus(422)
+            ->assertJson([
+                'message' => 'You cannot deactivate your own admin account.',
+            ]);
+
+        $this->assertTrue($admin->fresh()->is_active);
+    }
 }
 

@@ -29,7 +29,19 @@ class AdminController extends Controller
 
     public function toggleUserStatus(Request $request, User $user): JsonResponse
     {
-        if ($request->user()?->isTestAdmin() && ! $user->isTestAccount()) {
+        $actor = $request->user();
+
+        if (
+            $actor
+            && (string) $actor->getKey() === (string) $user->getKey()
+            && in_array($actor->role, ['admin', 'superadmin'], true)
+        ) {
+            return response()->json([
+                'message' => 'You cannot deactivate your own admin account.',
+            ], 422);
+        }
+
+        if ($actor?->isTestAdmin() && ! $user->isTestAccount()) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 

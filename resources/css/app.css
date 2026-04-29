@@ -275,6 +275,24 @@
         gap: 1rem;
     }
 
+    @media (min-width: 1280px) {
+        .auth-stage {
+            width: min(1160px, 100%);
+            grid-template-columns: minmax(0, 1fr) minmax(420px, 460px);
+            gap: 1.5rem;
+            align-items: stretch;
+        }
+
+        .auth-story {
+            min-height: 520px;
+            padding: 1.75rem;
+        }
+
+        .auth-card {
+            padding: 1.75rem;
+        }
+    }
+
     .auth-floating-layer {
         position: absolute;
         inset: 0;

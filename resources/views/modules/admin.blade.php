@@ -45,11 +45,18 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <span class="badge cursor-pointer" :class="u.is_active ? 'badge-active' : 'badge-danger'" @click="toggleStatus(u)" x-text="u.is_active ? 'Active' : 'Inactive'"></span>
+                                    <span class="badge"
+                                        :class="[
+                                            u.is_active ? 'badge-active' : 'badge-danger',
+                                            canToggleStatus(u) ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'
+                                        ]"
+                                        @click="canToggleStatus(u) && toggleStatus(u)"
+                                        :title="canToggleStatus(u) ? '' : 'You cannot deactivate your own admin account.'"
+                                        x-text="u.is_active ? 'Active' : 'Inactive'"></span>
                                 </td>
                                 <td class="text-sm text-slate-500" x-text="gst.formatDate(u.created_at)"></td>
                                 <td class="text-right">
-                                    <button @click="toggleStatus(u)" class="btn btn-ghost btn-xs" x-text="u.is_active ? 'Deactivate' : 'Activate'"></button>
+                                    <button @click="toggleStatus(u)" class="btn btn-ghost btn-xs" :disabled="!canToggleStatus(u)" :title="canToggleStatus(u) ? '' : 'You cannot deactivate your own admin account.'" x-text="u.is_active ? 'Deactivate' : 'Activate'"></button>
                                 </td>
                             </tr>
                         </template>
@@ -63,7 +70,17 @@
         function adminPage() {
             return {
                 users: @json($users),
+                currentUserId: @js((string) auth()->id()),
+                currentUserRole: @js((string) auth()->user()->role),
                 search: '',
+                canToggleStatus(u) {
+                    const userId = String(u.id || u._id || '');
+
+                    return !(
+                        userId === this.currentUserId
+                        && ['admin', 'superadmin'].includes(this.currentUserRole)
+                    );
+                },
                 get filtered() {
                     const q = this.search.toLowerCase();
                     return this.users.filter(u => !q || (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q));
