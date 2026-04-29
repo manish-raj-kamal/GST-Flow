@@ -53,39 +53,6 @@
         },
     }" class="auth-flow">
 
-        <div class="auth-test-logins">
-            <div>
-                <p class="auth-test-title">Test logins</p>
-                <p class="auth-test-copy">Jump into a seeded account.</p>
-            </div>
-
-            <div class="auth-test-grid">
-                <button type="button" class="auth-test-button" @click="testLogin('admin@gstplatform.com', 'admin123')">
-                    <span class="auth-test-avatar">AD</span>
-                    <span>
-                        <strong>Admin</strong>
-                        <small>admin@gstplatform.com</small>
-                    </span>
-                </button>
-
-                <button type="button" class="auth-test-button" @click="testLogin('demo@gstplatform.com', 'demo123')">
-                    <span class="auth-test-avatar">BU</span>
-                    <span>
-                        <strong>Business User</strong>
-                        <small>demo@gstplatform.com</small>
-                    </span>
-                </button>
-
-                <button type="button" class="auth-test-button" @click="testLogin('manager@gstplatform.com', 'manager123')">
-                    <span class="auth-test-avatar">MG</span>
-                    <span>
-                        <strong>Manager</strong>
-                        <small>manager@gstplatform.com</small>
-                    </span>
-                </button>
-            </div>
-        </div>
-
         <div class="auth-tabs" role="tablist" aria-label="Sign in method">
             <button type="button"
                 class="auth-tab"
@@ -183,11 +150,32 @@
                 </div>
             </template>
         </form>
-    </div>
 
-    <div class="auth-switch">
-        <span>Don't have an account?</span>
-        <a href="{{ route('register') }}" class="auth-link">Create one</a>
+        <div class="auth-switch">
+            <span>Don't have an account?</span>
+            <a href="{{ route('register') }}" class="auth-link">Create one</a>
+        </div>
+
+        <div class="auth-test-logins">
+            <span class="auth-test-title">Test login</span>
+
+            <div class="auth-test-grid">
+                <button type="button" class="auth-test-button" @click="testLogin('admin@gstplatform.com', 'admin123')">
+                    <span class="auth-test-avatar">AD</span>
+                    <span>Admin</span>
+                </button>
+
+                <button type="button" class="auth-test-button" @click="testLogin('demo@gstplatform.com', 'demo123')">
+                    <span class="auth-test-avatar">BU</span>
+                    <span>User</span>
+                </button>
+
+                <button type="button" class="auth-test-button" @click="testLogin('manager@gstplatform.com', 'manager123')">
+                    <span class="auth-test-avatar">MG</span>
+                    <span>Manager</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     {{-- Google Sign-In Script --}}

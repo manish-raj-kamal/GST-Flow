@@ -8,6 +8,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -34,12 +35,28 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'otp' => ['required', 'string', 'size:6'],
         ]);
+
+        $email = strtolower($request->email);
+        $cachedOtp = Cache::get("otp:{$email}");
+
+        if (! $cachedOtp || ! hash_equals((string) $cachedOtp, (string) $request->otp)) {
+            throw ValidationException::withMessages([
+                'otp' => 'Invalid or expired OTP.',
+            ]);
+        }
+
+        Cache::forget("otp:{$email}");
+        Cache::forget("otp_attempts:{$email}");
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => $email,
             'password' => Hash::make($request->password),
+            'role' => 'business_user',
+            'is_active' => true,
+            'email_verified_at' => now(),
         ]);
 
         event(new Registered($user));

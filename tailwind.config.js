@@ -12,7 +12,11 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['Quicksand', ...defaultTheme.fontFamily.sans],
+            },
+            fontWeight: {
+                extrabold: '700',
+                black: '700',
             },
         },
     },
