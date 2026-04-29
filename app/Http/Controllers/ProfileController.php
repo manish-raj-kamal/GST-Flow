@@ -26,13 +26,23 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
+        $incomingEmail = strtolower((string) ($validated['email'] ?? ''));
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isTestAccount() && $incomingEmail !== strtolower((string) $user->email)) {
+            return back()->withErrors([
+                'email' => 'For security reasons, test accounts cannot change email or password.',
+            ])->withInput();
         }
 
-        $request->user()->save();
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

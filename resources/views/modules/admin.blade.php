@@ -7,19 +7,25 @@
     </x-slot>
 
     <div class="p-4 sm:p-6 lg:p-8" x-data="adminPage()">
+        @if (auth()->user()->isTestAdmin())
+            <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+                You are viewing test-admin mode. The {{ $users->count() }} account{{ $users->count() === 1 ? '' : 's' }} shown here are test users only.
+            </div>
+        @endif
+
         {{-- Stats --}}
         <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Total Users</div><div class="mt-2 text-3xl font-bold text-slate-900">{{ $users->count() }}</div></div>
-            <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Active Users</div><div class="mt-2 text-3xl font-bold text-emerald-600">{{ $users->where('is_active', true)->count() }}</div></div>
-            <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Business Profiles</div><div class="mt-2 text-3xl font-bold text-amber-600">{{ $totalProfiles }}</div></div>
-            <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Total Invoices</div><div class="mt-2 text-3xl font-bold text-sky-600">{{ $totalInvoices }}</div></div>
+            <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Total Users</div><div class="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">{{ $users->count() }}</div></div>
+            <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Active Users</div><div class="mt-2 text-2xl font-bold text-emerald-600 sm:text-3xl">{{ $users->where('is_active', true)->count() }}</div></div>
+            <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Business Profiles</div><div class="mt-2 text-2xl font-bold text-amber-600 sm:text-3xl">{{ $totalProfiles }}</div></div>
+            <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Total Invoices</div><div class="mt-2 text-2xl font-bold text-sky-600 sm:text-3xl">{{ $totalInvoices }}</div></div>
         </div>
 
         {{-- User Management --}}
         <div class="card-lg">
-            <div class="flex items-center justify-between mb-4">
+            <div class="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                 <h3 class="panel-title">User Management</h3>
-                <div class="search-bar max-w-xs">
+                <div class="search-bar w-full max-w-xs">
                     <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input type="text" x-model="search" placeholder="Search users..." class="flex-1">
                 </div>

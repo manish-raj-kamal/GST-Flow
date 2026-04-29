@@ -1,14 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-            <div class="space-y-1">
-                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Dashboard</p>
-                <h2 class="text-2xl font-semibold text-slate-900">{{ $businessProfile?->business_name ?? 'GST Platform Dashboard' }}</h2>
-                <p class="text-sm text-slate-600">
+        <div class="flex min-w-0 items-center justify-between gap-2 sm:gap-3">
+            <div class="min-w-0">
+                <p class="hidden text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-700 sm:block">Dashboard</p>
+                <h2 class="truncate text-lg font-semibold text-slate-900 sm:text-2xl">{{ $businessProfile?->business_name ?? 'GST Flow' }}</h2>
+                <p class="mt-0.5 hidden text-sm text-slate-600 md:block">
                     {{ $businessProfile?->gstin ? 'GSTIN: '.$businessProfile->gstin.' · '.$businessProfile->state : 'Track invoices, tax collection, compliance and operating activity.' }}
                 </p>
             </div>
-            <div class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800">
+            <div class="hidden items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 sm:inline-flex">
                 {{ auth()->user()->role === 'admin' ? 'Admin access' : 'Business user access' }}
             </div>
         </div>
@@ -17,7 +17,7 @@
     <div class="gst-shell py-8">
         <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
             @if ($setupIssue)
-                <section class="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+                <section class="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-6">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
                             <h3 class="text-lg font-semibold text-amber-900">MongoDB setup required</h3>
@@ -43,9 +43,9 @@
                 @endphp
 
                 @foreach ($cards as $card)
-                    <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                         <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{{ $card['label'] }}</p>
-                        <p class="mt-4 text-3xl font-semibold text-slate-900">{{ $card['value'] }}</p>
+                        <p class="mt-4 text-2xl font-semibold text-slate-900 sm:text-3xl">{{ $card['value'] }}</p>
                         <p class="mt-2 text-xs text-slate-500">{{ $card['hint'] }}</p>
                     </article>
                 @endforeach
@@ -74,8 +74,8 @@
                 <article class="card-lg">
                     <p class="panel-label">Active customers</p>
                     <h3 class="panel-title">Customer footprint</h3>
-                    <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-                        <p class="text-4xl font-semibold text-slate-900">{{ $overview['active_customers'] ?? 0 }}</p>
+                    <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
+                        <p class="text-3xl font-semibold text-slate-900 sm:text-4xl">{{ $overview['active_customers'] ?? 0 }}</p>
                         <p class="mt-2 text-sm leading-6 text-slate-600">Distinct customers with recent invoice activity for the selected business profile.</p>
                     </div>
                 </article>

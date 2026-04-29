@@ -7,7 +7,7 @@
     </x-slot>
 
     <div class="p-4 sm:p-6 lg:p-8" x-data="taxSlabsPage()">
-        <div class="mb-6 flex items-center justify-between">
+        <div class="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             <p class="text-sm text-slate-500">GST rate master table used across products and invoices.</p>
             @if(auth()->user()->isAdmin())
             <button @click="openModal()" class="btn btn-primary btn-sm">
@@ -20,7 +20,7 @@
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <template x-for="slab in slabs" :key="slab.id || slab._id">
                 <div class="card text-center cursor-pointer" @click="openModal(slab)">
-                    <div class="text-4xl font-extrabold" :class="{'text-emerald-500': slab.rate == 0, 'text-sky-500': slab.rate == 5, 'text-amber-500': slab.rate == 12, 'text-orange-500': slab.rate == 18, 'text-red-500': slab.rate == 28, 'text-slate-700': ![0,5,12,18,28].includes(Number(slab.rate))}" x-text="slab.rate + '%'"></div>
+                    <div class="text-3xl font-extrabold sm:text-4xl" :class="{'text-emerald-500': slab.rate == 0, 'text-sky-500': slab.rate == 5, 'text-amber-500': slab.rate == 12, 'text-orange-500': slab.rate == 18, 'text-red-500': slab.rate == 28, 'text-slate-700': ![0,5,12,18,28].includes(Number(slab.rate))}" x-text="slab.rate + '%'"></div>
                     <div class="mt-2 text-sm font-semibold text-slate-700" x-text="slab.name"></div>
                     <div class="mt-1 text-xs text-slate-400" x-text="slab.effective_date ? 'Effective: ' + gst.formatDate(slab.effective_date) : ''"></div>
                     <span class="mt-2 badge" :class="slab.status === 'active' ? 'badge-active' : 'badge-inactive'" x-text="slab.status"></span>

@@ -7,6 +7,12 @@
         <p class="mt-1 text-sm text-gray-600">
             {{ __("Update your account's profile information and email address.") }}
         </p>
+
+        @if ($user->isTestAccount())
+            <p class="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+                {{ __('For security reasons, test accounts cannot change email or password.') }}
+            </p>
+        @endif
     </header>
 
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
@@ -25,7 +31,7 @@
 
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
+            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" :readonly="$user->isTestAccount()" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())

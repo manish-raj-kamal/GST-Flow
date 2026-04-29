@@ -200,6 +200,7 @@
             align-items: center;
             justify-content: space-between;
             padding-block: var(--space-2);
+            position: relative;
         }
 
         .brand {
@@ -230,6 +231,83 @@
             display: flex;
             align-items: center;
             gap: var(--space-1);
+        }
+
+        .nav-toggle {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: 0;
+            border-radius: 14px;
+            background: transparent;
+            color: #1e293b;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: none;
+            transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), color var(--duration-fast);
+        }
+
+        .nav-toggle:hover {
+            color: #0f172a;
+            transform: translateY(-1px);
+        }
+
+        .nav-toggle:focus-visible {
+            outline: none;
+        }
+
+        .nav-toggle-lines {
+            width: 26px;
+            height: 22px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .nav-toggle-lines span {
+            display: block;
+            height: 5px;
+            border-radius: 999px;
+            background: currentColor;
+            margin-inline-start: 0;
+            transform-origin: center;
+            transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease, width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform, opacity, width;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+        }
+
+        .nav-toggle-lines span:nth-child(1) {
+            width: 14px;
+            transform: translateX(12px);
+        }
+
+        .nav-toggle-lines span:nth-child(2) {
+            width: 14px;
+            transform: translateX(6px);
+        }
+
+        .nav-toggle-lines span:nth-child(3) {
+            width: 14px;
+            transform: translateX(0);
+        }
+
+        .nav.is-open .nav-toggle-lines span:nth-child(1) {
+            width: 26px;
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .nav.is-open .nav-toggle-lines span:nth-child(2) {
+            width: 26px;
+            opacity: 0;
+            transform: scaleX(0.3);
+        }
+
+        .nav.is-open .nav-toggle-lines span:nth-child(3) {
+            width: 26px;
+            transform: translateY(-8px) rotate(-45deg);
         }
 
         .nav-link {
@@ -290,14 +368,17 @@
         }
 
         .hero {
-            padding-top: var(--space-12);
-            padding-bottom: var(--space-10);
+            min-height: calc(100vh - 72px);
+            padding-top: var(--space-8);
+            padding-bottom: var(--space-6);
+            display: grid;
+            align-items: center;
         }
 
         .hero-grid {
             display: grid;
             grid-template-columns: 1.1fr 0.9fr;
-            gap: var(--space-8);
+            gap: var(--space-6);
             align-items: center;
         }
 
@@ -334,28 +415,72 @@
         }
 
         .hero-panel {
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-strong);
-            padding: var(--space-4);
+            max-width: 376px;
+            margin-left: auto;
+            border: 0;
+            background: transparent;
+            border-radius: var(--radius-md);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 20px 36px rgba(15, 23, 42, 0.12);
             position: relative;
             overflow: hidden;
+            transform: perspective(1200px) rotateY(-10deg) rotateX(5deg);
+            transform-origin: right center;
+            transform-style: preserve-3d;
+        }
+
+        .receipt-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .hero-panel-content {
+            position: relative;
+            z-index: 1;
+            padding: var(--space-3);
         }
 
         .hero-panel::before {
-            content: '';
+            content: 'GST RECEIPT';
             position: absolute;
-            inset: 0;
-            background: linear-gradient(125deg, rgba(245, 158, 11, 0.12), transparent 48%);
+            top: var(--space-1);
+            right: var(--space-2);
+            font-size: 11px;
+            line-height: 16px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #b45309;
+            border: 1px solid #f6d598;
+            border-radius: 999px;
+            background: #ffefc9;
+            padding: 2px 10px;
+        }
+
+        .receipt-side {
+            position: absolute;
+            top: 20px;
+            right: -14px;
+            width: 14px;
+            height: calc(100% - 40px);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            background: linear-gradient(180deg, #e8dcc2, #dbc9a5);
+            box-shadow: inset 1px 0 0 rgba(120, 53, 15, 0.14);
+            transform: translateZ(-2px);
             pointer-events: none;
+            z-index: 0;
         }
 
         .hero-panel-head {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--space-3);
+            margin-top: var(--space-1);
+            margin-bottom: var(--space-2);
+            padding-bottom: var(--space-1);
+            border-bottom: 1px dashed #dccca8;
         }
 
         .hero-panel-head span {
@@ -364,66 +489,174 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             font-weight: 700;
-            color: #64748b;
+            color: #92400e;
         }
 
         .hero-panel-head strong {
+            font-size: 14px;
+            line-height: 20px;
+            color: #78350f;
+            font-weight: 700;
+        }
+
+        .receipt-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--space-1);
+            margin-bottom: var(--space-2);
+            padding-bottom: var(--space-1);
+            border-bottom: 1px dashed #dccca8;
+        }
+
+        .receipt-meta p {
+            font-size: 12px;
+            line-height: 16px;
+            color: #64748b;
+        }
+
+        .receipt-meta p strong {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .receipt-lines {
+            display: grid;
+            gap: var(--space-1);
+            margin-bottom: var(--space-2);
+            padding-bottom: var(--space-1);
+            border-bottom: 1px dashed #dccca8;
+        }
+
+        .receipt-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .receipt-row b {
             font-size: 14px;
             line-height: 20px;
             color: #0f172a;
             font-weight: 700;
         }
 
-        .panel-bars {
-            display: grid;
-            gap: var(--space-2);
+        .receipt-row i {
+            height: 1px;
+            background: repeating-linear-gradient(
+                90deg,
+                #d1c4a5 0,
+                #d1c4a5 6px,
+                transparent 6px,
+                transparent 12px
+            );
         }
 
-        .bar {
-            height: 12px;
-            border-radius: 999px;
-            background: #e2e8f0;
-            overflow: hidden;
+        .receipt-row em {
+            font-size: 14px;
+            line-height: 20px;
+            color: #1e293b;
+            font-style: normal;
+            font-weight: 700;
         }
 
-        .bar > i {
-            display: block;
-            height: 100%;
-            border-radius: inherit;
-            background: linear-gradient(90deg, var(--brand), var(--accent));
-            transform-origin: left center;
-            transform: scaleX(calc(0.78 + (var(--scroll-progress) * 0.22)));
-            transition: transform var(--duration-base) ease;
+        .receipt-row.is-accent em {
+            color: #0284c7;
         }
 
-        .hero-micro-grid {
-            margin-top: var(--space-4);
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: var(--space-2);
+        .receipt-row.is-warn em {
+            color: #b45309;
         }
 
-        .micro-card {
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            padding: var(--space-2);
-            background: #ffffff;
+        .receipt-total {
+            border: 1px solid #f3ddb3;
+            background: #fff3d8;
+            border-radius: var(--radius-sm);
+            padding: var(--space-1) var(--space-2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
         }
 
-        .micro-card strong {
-            display: block;
-            font-size: 20px;
-            line-height: 24px;
-            color: #0f172a;
-        }
-
-        .micro-card span {
-            display: block;
-            margin-top: var(--space-1);
-            color: #64748b;
-            font-size: 13px;
+        .receipt-total span {
+            font-size: 12px;
             line-height: 16px;
-            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            color: #92400e;
+        }
+
+        .receipt-total strong {
+            font-size: 18px;
+            line-height: 24px;
+            color: #78350f;
+            font-weight: 700;
+        }
+
+        .receipt-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .receipt-chip {
+            border: 1px solid #bbf7d0;
+            background: #ecfdf3;
+            color: #166534;
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            line-height: 16px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .receipt-footer p {
+            font-size: 12px;
+            line-height: 16px;
+            color: #64748b;
+        }
+
+        .receipt-code {
+            margin-top: var(--space-2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-2);
+            padding-top: var(--space-1);
+            border-top: 1px dashed #dccca8;
+        }
+
+        .receipt-stars {
+            font-size: 12px;
+            line-height: 16px;
+            letter-spacing: 0.24em;
+            color: #a8a29e;
+            font-weight: 700;
+        }
+
+        .barcode {
+            width: 144px;
+            height: 28px;
+            border-radius: 4px;
+            background:
+                repeating-linear-gradient(
+                    90deg,
+                    #1f2937 0,
+                    #1f2937 2px,
+                    transparent 2px,
+                    transparent 4px,
+                    #111827 4px,
+                    #111827 5px,
+                    transparent 5px,
+                    transparent 8px
+                ),
+                #fff;
+            border: 1px solid #d6c9ac;
         }
 
         .trust-strip {
@@ -609,6 +842,18 @@
                 gap: var(--space-5);
             }
 
+            .hero {
+                min-height: auto;
+                padding-top: var(--space-6);
+                padding-bottom: var(--space-6);
+            }
+
+            .hero-panel {
+                max-width: 100%;
+                margin-left: 0;
+                transform: none;
+            }
+
             .grid-3 {
                 grid-template-columns: 1fr;
             }
@@ -637,7 +882,7 @@
 
             .hero {
                 padding-top: var(--space-8);
-                padding-bottom: var(--space-7);
+                padding-bottom: var(--space-6);
             }
 
             .stats-grid,
@@ -654,6 +899,54 @@
             }
         }
 
+        @media (max-width: 650px) {
+            .nav {
+                padding-block: var(--space-2);
+            }
+
+            .nav-toggle {
+                display: inline-flex;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: calc(100% + var(--space-2));
+                right: 0;
+                left: 0;
+                z-index: 30;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.98);
+                box-shadow: 0 16px 44px rgba(15, 23, 42, 0.16);
+                padding: var(--space-2);
+                display: grid;
+                gap: 4px;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-8px) scale(0.98);
+                transform-origin: top center;
+                pointer-events: none;
+                transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, visibility 220ms ease;
+            }
+
+            .nav.is-open .nav-links {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0) scale(1);
+                pointer-events: auto;
+            }
+
+            .nav-link,
+            .nav-links .btn {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .nav-links .btn {
+                margin-top: 2px;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             html {
                 scroll-behavior: auto;
@@ -667,6 +960,15 @@
 
             .shape {
                 transform: none !important;
+            }
+
+            .hero-panel {
+                transform: none;
+            }
+
+            .nav-links,
+            .nav-toggle-lines span {
+                transition: none;
             }
         }
     </style>
@@ -685,7 +987,14 @@
                     <span class="brand-mark">GST</span>
                     <span>{{ config('app.name') }}</span>
                 </a>
-                <div class="nav-links">
+                <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav-links" aria-label="Toggle navigation">
+                    <span class="nav-toggle-lines" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+                <div class="nav-links" id="main-nav-links">
                     <a href="#platform" class="nav-link">Platform</a>
                     <a href="#workflow" class="nav-link">Workflow</a>
                     <a href="#results" class="nav-link">Results</a>
@@ -718,32 +1027,57 @@
                 </div>
 
                 <aside class="hero-panel" data-reveal>
-                    <div class="hero-panel-head">
-                        <span>Live Operations Snapshot</span>
-                        <strong>Current Month</strong>
-                    </div>
-                    <div class="panel-bars">
-                        <div class="bar"><i style="width: 84%;"></i></div>
-                        <div class="bar"><i style="width: 68%;"></i></div>
-                        <div class="bar"><i style="width: 92%;"></i></div>
-                        <div class="bar"><i style="width: 76%;"></i></div>
-                    </div>
-                    <div class="hero-micro-grid">
-                        <div class="micro-card">
-                            <strong>2.4 hrs</strong>
-                            <span>Average reporting prep</span>
+                    <span class="receipt-side" aria-hidden="true"></span>
+                    <svg class="receipt-svg" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="none">
+                        <defs>
+                            <clipPath id="receipt-clip">
+                                <path id="receipt-clip-path" d=""></path>
+                            </clipPath>
+                        </defs>
+                        <rect id="receipt-bg-rect" width="400" height="600" fill="white" clip-path="url(#receipt-clip)"></rect>
+                        <path id="receipt-border-path" d="" stroke="#E0E0E0" stroke-width="1" fill="none"></path>
+                    </svg>
+                    <div class="hero-panel-content">
+                        <div class="hero-panel-head">
+                            <span>Operations Receipt</span>
+                            <strong>Apr 2026</strong>
                         </div>
-                        <div class="micro-card">
-                            <strong>98.7%</strong>
-                            <span>Validation pass rate</span>
+
+                        <div class="receipt-meta">
+                            <p>Batch <strong>#GST-2404</strong></p>
+                            <p>Entries <strong>18,420</strong></p>
+                            <p>Cycle <strong>Monthly Close</strong></p>
+                            <p>Region <strong>24 states</strong></p>
                         </div>
-                        <div class="micro-card">
-                            <strong>18,420</strong>
-                            <span>Invoices processed</span>
+
+                        <div class="receipt-lines">
+                            <div class="receipt-row">
+                                <b>Invoice Processing</b><i></i><em>₹ 8.42 Cr</em>
+                            </div>
+                            <div class="receipt-row is-accent">
+                                <b>GST Computation</b><i></i><em>₹ 1.16 Cr</em>
+                            </div>
+                            <div class="receipt-row is-warn">
+                                <b>Input Credit Match</b><i></i><em>₹ 0.64 Cr</em>
+                            </div>
+                            <div class="receipt-row">
+                                <b>Reporting Prepared</b><i></i><em>98.7%</em>
+                            </div>
                         </div>
-                        <div class="micro-card">
-                            <strong>24 states</strong>
-                            <span>Supply coverage</span>
+
+                        <div class="receipt-total">
+                            <span>Net GST Liability</span>
+                            <strong>₹ 52.8 L</strong>
+                        </div>
+
+                        <div class="receipt-footer">
+                            <span class="receipt-chip">Verified</span>
+                            <p>Generated in 2.4 hrs</p>
+                        </div>
+
+                        <div class="receipt-code">
+                            <span class="receipt-stars">***</span>
+                            <span class="barcode" aria-hidden="true"></span>
                         </div>
                     </div>
                 </aside>
@@ -877,6 +1211,101 @@
         (() => {
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             const revealNodes = [...document.querySelectorAll('[data-reveal]')];
+            const receiptPanel = document.querySelector('.hero-panel');
+            const receiptSvg = document.querySelector('.receipt-svg');
+            const receiptClipPath = document.getElementById('receipt-clip-path');
+            const receiptBorderPath = document.getElementById('receipt-border-path');
+            const receiptBgRect = document.getElementById('receipt-bg-rect');
+            const nav = document.querySelector('.nav');
+            const navToggle = document.querySelector('.nav-toggle');
+            const navLinks = document.querySelector('.nav-links');
+
+            const closeNavMenu = () => {
+                if (!nav || !navToggle) {
+                    return;
+                }
+
+                nav.classList.remove('is-open');
+                navToggle.setAttribute('aria-expanded', 'false');
+            };
+
+            const isCompactNav = () => window.matchMedia('(max-width: 650px)').matches;
+
+            if (nav && navToggle && navLinks) {
+                navToggle.addEventListener('click', () => {
+                    const isOpen = nav.classList.toggle('is-open');
+                    navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+
+                navLinks.querySelectorAll('a').forEach((link) => {
+                    link.addEventListener('click', () => {
+                        if (isCompactNav()) {
+                            closeNavMenu();
+                        }
+                    });
+                });
+
+                document.addEventListener('click', (event) => {
+                    if (!isCompactNav()) {
+                        return;
+                    }
+
+                    if (!(event.target instanceof Node) || nav.contains(event.target)) {
+                        return;
+                    }
+
+                    closeNavMenu();
+                });
+
+                window.addEventListener('resize', () => {
+                    if (!isCompactNav()) {
+                        closeNavMenu();
+                    }
+                }, { passive: true });
+            }
+
+            const buildReceiptPath = (width, height, toothCount, depth) => {
+                const step = width / toothCount;
+                let d = `M0 ${depth}`;
+
+                for (let i = 0; i < toothCount; i++) {
+                    const mid = (i * step) + (step / 2);
+                    const end = (i + 1) * step;
+                    d += ` L${mid.toFixed(2)} 0 L${end.toFixed(2)} ${depth}`;
+                }
+
+                d += ` V${(height - depth).toFixed(2)}`;
+
+                for (let i = toothCount - 1; i >= 0; i--) {
+                    const mid = (i * step) + (step / 2);
+                    const start = i * step;
+                    d += ` L${mid.toFixed(2)} ${height} L${start.toFixed(2)} ${(height - depth).toFixed(2)}`;
+                }
+
+                d += ' Z';
+                return d;
+            };
+
+            const updateReceiptEdges = () => {
+                if (!receiptPanel || !receiptSvg || !receiptClipPath || !receiptBorderPath || !receiptBgRect) {
+                    return;
+                }
+
+                const width = Math.max(320, Math.round(receiptPanel.clientWidth));
+                const height = Math.max(420, Math.round(receiptPanel.clientHeight));
+                const baseToothCount = Math.round(width / 14);
+                const viewportWidth = window.innerWidth || document.documentElement.clientWidth || width;
+                const densityFactor = (viewportWidth >= 700 && viewportWidth <= 1100) ? 0.75 : 1;
+                const toothCount = Math.max(20, Math.min(80, Math.round(baseToothCount * densityFactor)));
+                const depth = Math.max(8, Math.min(14, Math.round(width / 36)));
+                const path = buildReceiptPath(width, height, toothCount, depth);
+
+                receiptSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                receiptBgRect.setAttribute('width', String(width));
+                receiptBgRect.setAttribute('height', String(height));
+                receiptClipPath.setAttribute('d', path);
+                receiptBorderPath.setAttribute('d', path);
+            };
 
             if (!prefersReducedMotion) {
                 const observer = new IntersectionObserver((entries) => {
@@ -890,6 +1319,15 @@
                 revealNodes.forEach((node) => observer.observe(node));
             } else {
                 revealNodes.forEach((node) => node.classList.add('is-visible'));
+            }
+
+            updateReceiptEdges();
+
+            if ('ResizeObserver' in window && receiptPanel) {
+                const resizeObserver = new ResizeObserver(updateReceiptEdges);
+                resizeObserver.observe(receiptPanel);
+            } else {
+                window.addEventListener('resize', updateReceiptEdges, { passive: true });
             }
 
             if (prefersReducedMotion) return;

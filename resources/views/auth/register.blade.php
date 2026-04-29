@@ -18,8 +18,7 @@
              data-shape="rectangular"
              data-theme="outline"
              data-text="signup_with"
-             data-size="large"
-             data-width="360">
+             data-size="large">
         </div>
     </div>
 

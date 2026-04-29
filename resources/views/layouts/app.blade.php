@@ -47,13 +47,15 @@
         <div class="gst-main">
             {{-- Topbar --}}
             <header class="gst-topbar">
-                <div class="flex items-center gap-3">
+                <div class="flex min-w-0 items-center gap-3">
                     <button @click="sidebarOpen = !sidebarOpen" class="btn-ghost rounded-lg p-2 lg:hidden">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
-                    @isset($header)
-                        {{ $header }}
-                    @endisset
+                    <div class="min-w-0">
+                        @isset($header)
+                            {{ $header }}
+                        @endisset
+                    </div>
                 </div>
 
                 <div class="flex items-center gap-3">

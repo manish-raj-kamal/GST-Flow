@@ -11,7 +11,9 @@
 
     @if ($user->isPasswordChangeRestricted())
         <p class="mt-4 text-sm text-amber-700">
-            {{ __('Password changes are disabled for this account.') }}
+            {{ $user->isTestAccount()
+                ? __('For security reasons, test accounts cannot change email or password.')
+                : __('Password changes are disabled for this account.') }}
         </p>
     @else
         <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
