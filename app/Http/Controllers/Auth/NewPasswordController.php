@@ -37,12 +37,30 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $email = strtolower((string) $request->input('email'));
+        $requestingUser = User::query()->where('email', $email)->first();
+        if ($requestingUser && $requestingUser->isPasswordChangeRestricted()) {
+            return back()->withInput($request->only('email'))
+                ->withErrors(['email' => 'Password reset is not available for this account.']);
+        }
+
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            [
+                'email' => $email,
+                'password' => $request->input('password'),
+                'password_confirmation' => $request->input('password_confirmation'),
+                'token' => $request->input('token'),
+            ],
             function (User $user) use ($request) {
+                if ($user->isPasswordChangeRestricted()) {
+                    throw ValidationException::withMessages([
+                        'email' => ['Password reset is not available for this account.'],
+                    ]);
+                }
+
                 $user->forceFill([
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),

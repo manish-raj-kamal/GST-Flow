@@ -45,4 +45,30 @@ class PasswordUpdateTest extends TestCase
             ->assertSessionHasErrorsIn('updatePassword', 'current_password')
             ->assertRedirect('/profile');
     }
+
+    public function test_admin_demo_and_manager_accounts_cannot_update_password(): void
+    {
+        $accounts = [
+            User::factory()->create(['email' => 'admin@gstplatform.com', 'role' => 'admin']),
+            User::factory()->create(['email' => 'demo@gstplatform.com', 'role' => 'business_user', 'name' => 'Demo Business User']),
+            User::factory()->create(['email' => 'manager@gstplatform.com', 'role' => 'business_user', 'name' => 'Demo Manager']),
+        ];
+
+        foreach ($accounts as $user) {
+            $response = $this
+                ->actingAs($user)
+                ->from('/profile')
+                ->put('/password', [
+                    'current_password' => 'password',
+                    'password' => 'new-password',
+                    'password_confirmation' => 'new-password',
+                ]);
+
+            $response
+                ->assertSessionHasErrorsIn('updatePassword', 'password')
+                ->assertRedirect('/profile');
+
+            $this->assertTrue(Hash::check('password', $user->fresh()->password));
+        }
+    }
 }

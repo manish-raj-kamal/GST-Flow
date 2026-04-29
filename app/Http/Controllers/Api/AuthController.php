@@ -124,12 +124,18 @@ class AuthController extends Controller
 
     public function changePassword(Request $request): JsonResponse
     {
+        $user = $request->user();
+        if ($user->isPasswordChangeRestricted()) {
+            return response()->json([
+                'message' => 'Password changes are disabled for this account.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'current_password' => ['required', 'string'],
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        $user = $request->user();
         if (! Hash::check($validated['current_password'], $user->password)) {
             throw ValidationException::withMessages([
                 'current_password' => ['The current password is incorrect.'],

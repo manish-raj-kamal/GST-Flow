@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class OtpController extends Controller
 {
@@ -21,11 +20,20 @@ class OtpController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email', 'max:255'],
+            'purpose' => ['nullable', 'string', 'in:login,register'],
         ]);
 
         $email = strtolower($request->email);
+        $purpose = $request->input('purpose', 'login');
         $cooldownKey = "otp_cooldown:{$email}";
         $attemptsKey = "otp_attempts:{$email}";
+
+        if ($purpose === 'register' && User::where('email', $email)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An account already exists with this email.',
+            ], 422);
+        }
 
         // Rate limit: cooldown between sends
         if (Cache::has($cooldownKey)) {
@@ -57,7 +65,11 @@ class OtpController extends Controller
 
         // Send email
         try {
-            Mail::raw("Your GST Platform login code is: {$otp}\n\nThis code expires in {$expiryMinutes} minutes.", function ($message) use ($email) {
+            Mail::send('emails.otp-code', [
+                'otp' => $otp,
+                'expiryMinutes' => $expiryMinutes,
+                'appName' => config('app.name'),
+            ], function ($message) use ($email) {
                 $message->to($email)
                     ->subject('Your OTP Code — ' . config('app.name'));
             });
@@ -75,14 +87,13 @@ class OtpController extends Controller
     }
 
     /**
-     * Verify the OTP and log the user in (or register them).
+     * Verify the OTP and log the user in.
      */
     public function verify(Request $request): RedirectResponse
     {
         $request->validate([
             'email' => ['required', 'email', 'max:255'],
             'otp' => ['required', 'string', 'size:6'],
-            'name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $email = strtolower($request->email);
@@ -99,19 +110,7 @@ class OtpController extends Controller
         $user = User::where('email', $email)->first();
 
         if (! $user) {
-            // Auto-register if coming from the register page
-            if ($request->filled('register')) {
-                $user = User::create([
-                    'name' => $request->name ?? Str::before($email, '@'),
-                    'email' => $email,
-                    'password' => bcrypt(Str::random(32)),
-                    'email_verified_at' => now(),
-                    'role' => 'business_user',
-                    'is_active' => true,
-                ]);
-            } else {
-                return back()->withErrors(['email' => 'No account found with this email.'])->withInput();
-            }
+            return back()->withErrors(['email' => 'No account found with this email.'])->withInput();
         }
 
         if (! $user->is_active) {

@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\CustomResetPasswordNotification;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -24,7 +24,7 @@ class PasswordResetTest extends TestCase
 
         $this->post('/forgot-password', ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, CustomResetPasswordNotification::class);
     }
 
     public function test_reset_password_screen_can_be_rendered(): void
@@ -35,7 +35,7 @@ class PasswordResetTest extends TestCase
 
         $this->post('/forgot-password', ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
+        Notification::assertSentTo($user, CustomResetPasswordNotification::class, function ($notification) {
             $response = $this->get('/reset-password/'.$notification->token);
 
             $response->assertStatus(200);
@@ -52,7 +52,7 @@ class PasswordResetTest extends TestCase
 
         $this->post('/forgot-password', ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+        Notification::assertSentTo($user, CustomResetPasswordNotification::class, function ($notification) use ($user) {
             $response = $this->post('/reset-password', [
                 'token' => $notification->token,
                 'email' => $user->email,
@@ -66,5 +66,24 @@ class PasswordResetTest extends TestCase
 
             return true;
         });
+    }
+
+    public function test_admin_demo_and_manager_accounts_cannot_request_reset_links(): void
+    {
+        Notification::fake();
+
+        $accounts = [
+            User::factory()->create(['email' => 'admin@gstplatform.com', 'role' => 'admin']),
+            User::factory()->create(['email' => 'demo@gstplatform.com', 'role' => 'business_user', 'name' => 'Demo Business User']),
+            User::factory()->create(['email' => 'manager@gstplatform.com', 'role' => 'business_user', 'name' => 'Demo Manager']),
+        ];
+
+        foreach ($accounts as $user) {
+            $response = $this->from('/forgot-password')->post('/forgot-password', ['email' => $user->email]);
+
+            $response->assertRedirect('/forgot-password');
+            $response->assertSessionHasErrors('email');
+            Notification::assertNotSentTo($user, CustomResetPasswordNotification::class);
+        }
     }
 }

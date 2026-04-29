@@ -207,7 +207,11 @@ class PageController extends Controller
     {
         abort_if(! $request->user()->isAdmin(), 403);
         try {
-            $users = User::query()->get()->sortBy('name')->values();
+            $users = User::query()
+                ->when($request->user()->isTestAdmin(), fn ($query) => $query->whereIn('email', User::TEST_ACCOUNT_EMAILS))
+                ->get()
+                ->sortBy('name')
+                ->values();
             $totalProfiles = BusinessProfile::query()->count();
             $totalInvoices = Invoice::query()->count();
         } catch (Throwable) {
