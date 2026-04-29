@@ -161,8 +161,8 @@
         }
 
         h1 {
-            font-size: clamp(40px, 7vw, 64px);
-            line-height: 1.05;
+            font-size: clamp(36px, 6vw, 56px);
+            line-height: 1.08;
         }
 
         h2 {
@@ -318,6 +318,7 @@
 
         .hero-copy h1 {
             margin-top: var(--space-3);
+            max-width: 11ch;
         }
 
         .hero-copy p {
@@ -704,8 +705,8 @@
             <div class="container hero-grid">
                 <div class="hero-copy" data-reveal>
                     <span class="hero-badge">GST Operations Platform</span>
-                    <h1>Run invoicing, tax logic and compliance reporting from one connected workspace.</h1>
-                    <p>Move from transaction entry to filing-ready summaries without switching tools. {{ config('app.name') }} unifies invoice generation, GSTIN checks, tax computation, and exports for finance teams that need reliable day-to-day execution.</p>
+                    <h1>From invoice entry to filing-ready GST reports.</h1>
+                    <p>{{ config('app.name') }} unifies invoice generation, GSTIN checks, tax computation, and export workflows for day-to-day finance operations.</p>
                     <div class="hero-cta">
                         @auth
                             <a href="{{ url('/dashboard') }}" class="btn btn-primary">Continue to Dashboard</a>
