@@ -100,13 +100,13 @@
     </nav>
 
     {{-- Sidebar Footer --}}
-    <div class="sidebar-footer border-t border-white/10 px-4 py-4">
+    <div class="sidebar-footer border-t border-slate-200 px-4 py-4">
         <div class="flex items-center gap-3">
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-xs font-bold text-white">
                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
             </div>
             <div class="sidebar-user-details min-w-0 flex-1">
-                <div class="truncate text-sm font-medium text-slate-200">{{ Auth::user()->name }}</div>
+                <div class="truncate text-sm font-medium text-slate-800">{{ Auth::user()->name }}</div>
                 <div class="truncate text-[11px] text-slate-500">{{ Auth::user()->role === 'admin' ? 'Administrator' : 'Business User' }}</div>
             </div>
         </div>
