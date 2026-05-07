@@ -1,10 +1,11 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
-        </h2>
+        <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-slate-950">{{ __('Profile Information') }}</h2>
+            <x-info-tip text="Your display name and email identify your account across the platform." />
+        </div>
 
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-1 text-sm text-slate-600">
             {{ __("Update your account's profile information and email address.") }}
         </p>
 

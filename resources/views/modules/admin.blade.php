@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Administration</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Admin Panel</h1>
+            <p class="module-kicker">Administration</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Admin Panel</h1>
+                <x-info-tip placement="bottom" text="Admins can review users, change roles, toggle account status, and monitor platform-level totals from this page." />
+            </div>
+            <p class="module-subtitle hidden md:block">Manage user access and monitor account activity across the platform.</p>
         </div>
     </x-slot>
 
@@ -24,7 +28,10 @@
         {{-- User Management --}}
         <div class="card-lg">
             <div class="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-                <h3 class="panel-title">User Management</h3>
+                <div class="flex items-center gap-2">
+                    <h3 class="panel-title !mt-0">User Management</h3>
+                    <x-info-tip text="Change roles carefully. Admin users can access management controls and platform-wide data." />
+                </div>
                 <div class="search-bar w-full max-w-xs">
                     <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input type="text" x-model="search" placeholder="Search users..." class="flex-1">

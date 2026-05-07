@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Audit</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Activity Logs</h1>
+            <p class="module-kicker">Audit</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Activity Logs</h1>
+                <x-info-tip placement="bottom" text="Activity logs show recent system actions, related users, IP address, and affected records for audit review." />
+            </div>
+            <p class="module-subtitle hidden md:block">Filter recorded actions to understand recent changes and operational history.</p>
         </div>
     </x-slot>
 

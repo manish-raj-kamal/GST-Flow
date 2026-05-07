@@ -59,10 +59,12 @@
                 </div>
 
                 <div class="flex items-center gap-3">
+                    <x-info-tip placement="bottom" class="hidden sm:inline-flex" text="Follow the left navigation as a GST workflow: create a business profile, add customers and products, create invoices, then review reports and GSTR summaries." />
+
                     {{-- User Menu --}}
                     <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" class="flex items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-slate-100">
-                            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-xs font-bold text-white">
+                        <button @click="open = !open" class="flex items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-sm font-semibold text-slate-600 transition-all hover:bg-white hover:shadow-sm">
+                            <div class="avatar-mark h-8 w-8">
                                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                             </div>
                             <span class="hidden sm:inline">{{ Auth::user()->name }}</span>
@@ -70,7 +72,7 @@
                         </button>
 
                         <div x-show="open" @click.outside="open = false" x-transition
-                            class="absolute right-0 mt-2 w-48 rounded-xl border bg-white py-1 shadow-lg" style="border-color: hsl(var(--gst-border));">
+                            class="absolute right-0 mt-2 w-48 rounded-lg border bg-white py-1 shadow-lg" style="border-color: hsl(var(--gst-border));">
                             <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Profile Settings</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

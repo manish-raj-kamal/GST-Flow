@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Compliance</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">GSTR Summary</h1>
+            <p class="module-kicker">Compliance</p>
+            <div class="page-title-row">
+                <h1 class="module-title">GSTR Summary</h1>
+                <x-info-tip placement="bottom" text="GSTR summaries restructure invoice data into outward supplies, tax liability, HSN-wise totals, and state-wise supply totals." />
+            </div>
+            <p class="module-subtitle hidden md:block">Generate return-style datasets from invoice activity for compliance review.</p>
         </div>
     </x-slot>
 
@@ -25,7 +29,10 @@
             <div class="space-y-6">
                 {{-- GSTR-1 Style: Outward Supplies --}}
                 <div class="card-lg">
-                    <h3 class="panel-title mb-4">Outward Supplies Summary <span class="text-xs text-slate-400">(GSTR-1 style)</span></h3>
+                    <div class="mb-4 flex items-center gap-2">
+                        <h3 class="panel-title !mt-0">Outward Supplies Summary <span class="text-xs text-slate-400">(GSTR-1 style)</span></h3>
+                        <x-info-tip text="Summary of outward taxable supplies based on issued invoice data." />
+                    </div>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div class="rounded-xl bg-slate-50 p-4"><div class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-1">Total Invoices</div><div class="text-2xl font-bold" x-text="data.outward_supplies?.invoice_count || 0"></div></div>
                         <div class="rounded-xl bg-slate-50 p-4"><div class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-1">Taxable Turnover</div><div class="text-2xl font-bold" x-text="'₹ ' + gst.formatNumber(data.outward_supplies?.taxable_value)"></div></div>
@@ -36,7 +43,10 @@
 
                 {{-- Tax Liability --}}
                 <div class="card-lg">
-                    <h3 class="panel-title mb-4">Tax Liability <span class="text-xs text-slate-400">(GSTR-3B style)</span></h3>
+                    <div class="mb-4 flex items-center gap-2">
+                        <h3 class="panel-title !mt-0">Tax Liability <span class="text-xs text-slate-400">(GSTR-3B style)</span></h3>
+                        <x-info-tip text="GST liability split into CGST, SGST, and IGST according to supply type." />
+                    </div>
                     <div class="grid gap-4 sm:grid-cols-3">
                         <div class="rounded-xl bg-sky-50 p-4 text-center"><div class="text-xs text-slate-400 mb-1">CGST</div><div class="text-2xl font-bold text-sky-700" x-text="'₹ ' + gst.formatNumber(data.tax_liability?.cgst)"></div></div>
                         <div class="rounded-xl bg-indigo-50 p-4 text-center"><div class="text-xs text-slate-400 mb-1">SGST</div><div class="text-2xl font-bold text-indigo-700" x-text="'₹ ' + gst.formatNumber(data.tax_liability?.sgst)"></div></div>
@@ -46,7 +56,10 @@
 
                 {{-- HSN-wise Summary --}}
                 <div class="card-lg" x-show="data.hsn_summary && data.hsn_summary.length">
-                    <h3 class="panel-title mb-4">HSN-wise Summary</h3>
+                    <div class="mb-4 flex items-center gap-2">
+                        <h3 class="panel-title !mt-0">HSN-wise Summary</h3>
+                        <x-info-tip text="Groups taxable value and tax totals by HSN code for reporting review." />
+                    </div>
                     <div class="overflow-x-auto"><table class="data-table"><thead><tr><th>HSN</th><th>Description</th><th>Quantity</th><th>Taxable</th><th>Tax</th><th>Total</th></tr></thead><tbody>
                         <template x-for="h in (data.hsn_summary || [])" :key="h.hsn_code"><tr>
                             <td class="font-mono" x-text="h.hsn_code"></td><td x-text="h.description || '—'"></td><td x-text="h.quantity || 0"></td>
@@ -57,7 +70,10 @@
 
                 {{-- State-wise --}}
                 <div class="card-lg" x-show="data.state_wise_supplies && data.state_wise_supplies.length">
-                    <h3 class="panel-title mb-4">State-wise Supply Totals</h3>
+                    <div class="mb-4 flex items-center gap-2">
+                        <h3 class="panel-title !mt-0">State-wise Supply Totals</h3>
+                        <x-info-tip text="Groups supply value by state to make place-of-supply review easier." />
+                    </div>
                     <div class="overflow-x-auto"><table class="data-table"><thead><tr><th>State</th><th>Invoices</th><th>Taxable</th><th>Tax</th><th>Total</th></tr></thead><tbody>
                         <template x-for="s in (data.state_wise_supplies || [])" :key="s.state"><tr>
                             <td class="font-medium" x-text="s.state"></td><td x-text="s.count || 0"></td>

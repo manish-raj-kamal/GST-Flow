@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Analytics</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Reports</h1>
+            <p class="module-kicker">Analytics</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Reports</h1>
+                <x-info-tip placement="bottom" text="Reports summarize invoice counts, taxable value, CGST, SGST, IGST, total tax, and grand total by selected dates or month." />
+            </div>
+            <p class="module-subtitle hidden md:block">Filter sales, purchases, and monthly summaries, then export CSV or XLS when needed.</p>
         </div>
     </x-slot>
 
@@ -24,6 +28,10 @@
 
         {{-- Filters --}}
         <div class="card mb-6" x-show="tab !== 'monthly'">
+            <div class="mb-4 flex items-center gap-2">
+                <p class="panel-label">Report filters</p>
+                <x-info-tip text="Use date range and status to narrow the invoice set before reviewing totals or exporting CSV." />
+            </div>
             <div class="flex flex-wrap gap-3 items-end">
                 <div class="form-group"><label class="form-label">From</label><input type="date" x-model="filters.from_date" class="form-input text-sm"></div>
                 <div class="form-group"><label class="form-label">To</label><input type="date" x-model="filters.to_date" class="form-input text-sm"></div>
@@ -39,6 +47,10 @@
         </div>
 
         <div class="card mb-6" x-show="tab === 'monthly'">
+            <div class="mb-4 flex items-center gap-2">
+                <p class="panel-label">Monthly controls</p>
+                <x-info-tip text="Choose a filing month to load GST totals for that period." />
+            </div>
             <div class="flex items-end gap-3">
                 <div class="form-group"><label class="form-label">Month</label><input type="month" x-model="monthFilter" class="form-input text-sm"></div>
                 <button @click="loadMonthly()" class="btn btn-primary btn-sm">Load Summary</button>

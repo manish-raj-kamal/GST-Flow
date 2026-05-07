@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Relationships</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Customers</h1>
+            <p class="module-kicker">Relationships</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Customers</h1>
+                <x-info-tip placement="bottom" text="Customer GSTIN and state help determine whether invoices use CGST/SGST for intrastate supply or IGST for interstate supply." />
+            </div>
+            <p class="module-subtitle hidden md:block">Maintain buyer details so invoice creation stays fast and tax treatment is easier to review.</p>
         </div>
     </x-slot>
 
@@ -73,12 +77,12 @@
                     <form @submit.prevent="save()" class="space-y-4">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="form-group sm:col-span-2"><label class="form-label">Customer Name *</label><input x-model="form.customer_name" class="form-input" required></div>
-                            <div class="form-group"><label class="form-label">GSTIN</label><input x-model="form.gstin" class="form-input font-mono" maxlength="15" placeholder="Optional"></div>
-                            <div class="form-group"><label class="form-label">State</label><input x-model="form.state" class="form-input"></div>
+                            <div class="form-group"><label class="form-label">GSTIN <x-info-tip text="Optional for consumers, but useful for B2B customers because it helps validate buyer identity." /></label><input x-model="form.gstin" class="form-input font-mono" maxlength="15" placeholder="Optional"></div>
+                            <div class="form-group"><label class="form-label">State <x-info-tip text="Customer state is used to understand place of supply and interstate or intrastate treatment." /></label><input x-model="form.state" class="form-input"></div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Address</label><input x-model="form.address" class="form-input"></div>
                             <div class="form-group"><label class="form-label">Phone</label><input x-model="form.phone" class="form-input"></div>
                             <div class="form-group"><label class="form-label">Email</label><input type="email" x-model="form.email" class="form-input"></div>
-                            <div class="form-group"><label class="form-label">Customer Type</label>
+                            <div class="form-group"><label class="form-label">Customer Type <x-info-tip text="B2B, B2C, or government classification helps reports and invoice review." /></label>
                                 <select x-model="form.customer_type" class="form-select">
                                     <option value="business">Business (B2B)</option>
                                     <option value="consumer">Consumer (B2C)</option>

@@ -1,10 +1,11 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Update Password') }}
-        </h2>
+        <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-slate-950">{{ __('Update Password') }}</h2>
+            <x-info-tip text="Use this step to change your password when password changes are allowed for your account." />
+        </div>
 
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-1 text-sm text-slate-600">
             {{ __('Ensure your account is using a long, random password to stay secure.') }}
         </p>
     </header>

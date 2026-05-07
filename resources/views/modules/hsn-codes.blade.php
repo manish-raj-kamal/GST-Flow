@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Classification</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">HSN Codes</h1>
+            <p class="module-kicker">Classification</p>
+            <div class="page-title-row">
+                <h1 class="module-title">HSN Codes</h1>
+                <x-info-tip placement="bottom" text="HSN codes classify goods and services and connect each item to the correct GST rate for invoice calculation." />
+            </div>
+            <p class="module-subtitle hidden md:block">Search or maintain HSN mappings used by the product catalog and tax engine.</p>
         </div>
     </x-slot>
 
@@ -61,8 +65,8 @@
                     </div>
                     <form @submit.prevent="save()" class="space-y-4">
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <div class="form-group"><label class="form-label">HSN Code *</label><input x-model="form.hsn_code" class="form-input font-mono" maxlength="8" required></div>
-                            <div class="form-group"><label class="form-label">GST Rate (%) *</label><input type="number" step="0.01" x-model="form.gst_rate" class="form-input" required></div>
+                            <div class="form-group"><label class="form-label">HSN Code * <x-info-tip text="HSN or SAC classification code used to identify the tax category." /></label><input x-model="form.hsn_code" class="form-input font-mono" maxlength="8" required></div>
+                            <div class="form-group"><label class="form-label">GST Rate (%) * <x-info-tip text="Default GST rate applied when this HSN is selected for a product." /></label><input type="number" step="0.01" x-model="form.gst_rate" class="form-input" required></div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Description *</label><input x-model="form.description" class="form-input" required></div>
                             <div class="form-group"><label class="form-label">Category</label><input x-model="form.category" class="form-input"></div>
                             <div class="form-group"><label class="form-label">Effective Date</label><input type="date" x-model="form.effective_date" class="form-input"></div>

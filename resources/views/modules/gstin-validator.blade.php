@@ -1,15 +1,22 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Validation</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">GSTIN Validator</h1>
+            <p class="module-kicker">Validation</p>
+            <div class="page-title-row">
+                <h1 class="module-title">GSTIN Validator</h1>
+                <x-info-tip placement="bottom" text="Validate a 15-character GSTIN, extract the state code and PAN, and confirm the checksum before saving business or customer details." />
+            </div>
+            <p class="module-subtitle hidden md:block">Check GSTIN format and structure before using it in profiles or customers.</p>
         </div>
     </x-slot>
 
     <div class="p-4 sm:p-6 lg:p-8" x-data="gstinValidator()">
         <div class="mx-auto max-w-2xl">
             <div class="card-lg">
-                <h3 class="panel-title mb-2">Validate a GSTIN</h3>
+                <div class="mb-2 flex items-center gap-2">
+                    <h3 class="panel-title !mt-0">Validate a GSTIN</h3>
+                    <x-info-tip text="Paste the GSTIN exactly as provided. The validator checks length, pattern, state code, PAN portion, and checksum." />
+                </div>
                 <p class="text-sm text-slate-500 mb-6">Enter a 15-character GSTIN to validate its format, extract state code, PAN, and verify checksum.</p>
 
                 <div class="flex gap-3">
@@ -22,7 +29,10 @@
 
                 {{-- Example --}}
                 <div class="mt-4 rounded-xl bg-slate-50 p-4 text-sm">
-                    <div class="font-semibold text-slate-700 mb-2">GSTIN Structure</div>
+                    <div class="mb-2 flex items-center gap-2">
+                        <div class="font-semibold text-slate-700">GSTIN Structure</div>
+                        <x-info-tip text="GSTIN consists of state code, PAN, entity number, default Z, and checksum character." />
+                    </div>
                     <div class="font-mono text-lg tracking-wider text-slate-600">
                         <span class="text-sky-600 font-bold">27</span><span class="text-purple-600 font-bold">ABCDE1234F</span><span class="text-amber-600 font-bold">1</span><span class="text-slate-400 font-bold">Z</span><span class="text-emerald-600 font-bold">5</span>
                     </div>

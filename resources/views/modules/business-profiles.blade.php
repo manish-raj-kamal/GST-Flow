@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Identity</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Business Profiles</h1>
+            <p class="module-kicker">Identity</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Business Profiles</h1>
+                <x-info-tip placement="bottom" text="Create the seller identities used on invoices. GSTIN, state, PAN, and address details from the active profile flow into tax documents." />
+            </div>
+            <p class="module-subtitle hidden md:block">Set up the GST-registered business details before adding customers, products, or invoices.</p>
         </div>
     </x-slot>
 
@@ -66,8 +70,8 @@
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="form-group"><label class="form-label">Business Name *</label><input x-model="form.business_name" class="form-input" required></div>
                             <div class="form-group"><label class="form-label">Legal Name</label><input x-model="form.legal_name" class="form-input"></div>
-                            <div class="form-group"><label class="form-label">GSTIN *</label><input x-model="form.gstin" class="form-input font-mono" maxlength="15" required placeholder="e.g. 27ABCDE1234F1Z5"></div>
-                            <div class="form-group"><label class="form-label">Business Type</label>
+                            <div class="form-group"><label class="form-label">GSTIN * <x-info-tip text="15-character GST registration number. The first two digits identify state and the middle ten characters are PAN." /></label><input x-model="form.gstin" class="form-input font-mono" maxlength="15" required placeholder="e.g. 27ABCDE1234F1Z5"></div>
+                            <div class="form-group"><label class="form-label">Business Type <x-info-tip text="Choose the legal structure that best matches this seller profile." /></label>
                                 <select x-model="form.business_type" class="form-select">
                                     <option value="">Select type</option>
                                     <option value="proprietorship">Proprietorship</option>
@@ -82,7 +86,7 @@
                             <div class="form-group"><label class="form-label">Pincode</label><input x-model="form.pincode" class="form-input" maxlength="6"></div>
                             <div class="form-group"><label class="form-label">Email</label><input type="email" x-model="form.email" class="form-input"></div>
                             <div class="form-group"><label class="form-label">Phone</label><input x-model="form.phone" class="form-input"></div>
-                            <div class="form-group"><label class="form-label">Registration Date</label><input type="date" x-model="form.registration_date" class="form-input"></div>
+                            <div class="form-group"><label class="form-label">Registration Date <x-info-tip text="Optional reference date for when this business was registered under GST." /></label><input type="date" x-model="form.registration_date" class="form-input"></div>
                         </div>
                         <div class="flex justify-end gap-3 pt-2">
                             <button type="button" @click="showModal = false" class="btn btn-secondary">Cancel</button>

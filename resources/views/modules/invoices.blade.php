@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Transactions</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Invoices</h1>
+            <p class="module-kicker">Transactions</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Invoices</h1>
+                <x-info-tip placement="bottom" text="Invoices combine business profile, customer, product, HSN, tax rate, supply type, and status into an auditable GST transaction." />
+            </div>
+            <p class="module-subtitle hidden md:block">Search, review, duplicate, export, and manage GST invoices from one transaction list.</p>
         </div>
     </x-slot>
 

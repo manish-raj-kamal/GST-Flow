@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Reference</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">System Documentation</h1>
+            <p class="module-kicker">Reference</p>
+            <div class="page-title-row">
+                <h1 class="module-title">System Documentation</h1>
+                <x-info-tip placement="bottom" text="Documentation lists API routes, collections, calculation rules, and implemented capabilities for developers and admins." />
+            </div>
+            <p class="module-subtitle hidden md:block">Use this reference to understand data structures, API coverage, and GST calculation behavior.</p>
         </div>
     </x-slot>
 
@@ -11,10 +15,17 @@
 
             {{-- API Routes --}}
             <div class="card-lg" x-data="{ open: true }">
-                <button @click="open = !open" class="flex w-full items-center justify-between text-left">
-                    <h3 class="panel-title">API Routes Reference</h3>
-                    <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                </button>
+                <div class="flex w-full items-center justify-between gap-3">
+                    <button @click="open = !open" class="min-w-0 flex-1 text-left">
+                        <h3 class="panel-title !mt-0">API Routes Reference</h3>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <x-info-tip text="Endpoint list for auth, master data, invoices, dashboard, reports, exports, and admin APIs." />
+                        <button @click="open = !open" class="btn-ghost rounded-lg p-1" aria-label="Toggle API routes">
+                            <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                    </div>
+                </div>
                 <div x-show="open" x-transition class="mt-4 overflow-x-auto">
                     <table class="data-table text-xs">
                         <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr></thead>
@@ -68,10 +79,17 @@
 
             {{-- Database Schema --}}
             <div class="card-lg" x-data="{ open: false }">
-                <button @click="open = !open" class="flex w-full items-center justify-between text-left">
-                    <h3 class="panel-title">Database Collections (MongoDB)</h3>
-                    <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                </button>
+                <div class="flex w-full items-center justify-between gap-3">
+                    <button @click="open = !open" class="min-w-0 flex-1 text-left">
+                        <h3 class="panel-title !mt-0">Database Collections (MongoDB)</h3>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <x-info-tip text="Collections used by the MongoDB-backed GST platform." />
+                        <button @click="open = !open" class="btn-ghost rounded-lg p-1" aria-label="Toggle database collections">
+                            <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                    </div>
+                </div>
                 <div x-show="open" x-transition class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach(['users', 'roles', 'permissions', 'business_profiles', 'customers', 'products', 'hsn_codes', 'tax_slabs', 'invoices', 'reports', 'activity_logs', 'invoice_versions', 'state_codes'] as $coll)
                     <div class="rounded-xl border bg-slate-50 p-3" style="border-color: hsl(var(--gst-border));">
@@ -83,10 +101,17 @@
 
             {{-- Tax Calculation Logic --}}
             <div class="card-lg" x-data="{ open: false }">
-                <button @click="open = !open" class="flex w-full items-center justify-between text-left">
-                    <h3 class="panel-title">Tax Calculation Logic</h3>
-                    <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                </button>
+                <div class="flex w-full items-center justify-between gap-3">
+                    <button @click="open = !open" class="min-w-0 flex-1 text-left">
+                        <h3 class="panel-title !mt-0">Tax Calculation Logic</h3>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <x-info-tip text="Explains how intrastate and interstate GST values are split across CGST, SGST, and IGST." />
+                        <button @click="open = !open" class="btn-ghost rounded-lg p-1" aria-label="Toggle tax calculation logic">
+                            <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                    </div>
+                </div>
                 <div x-show="open" x-transition class="mt-4 space-y-4 text-sm text-slate-600">
                     <div class="rounded-xl bg-slate-50 p-4">
                         <h4 class="font-semibold text-slate-800 mb-2">Intrastate (Same State)</h4>

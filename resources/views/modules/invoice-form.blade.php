@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Create</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">New Invoice</h1>
+            <p class="module-kicker">Create</p>
+            <div class="page-title-row">
+                <h1 class="module-title">New Invoice</h1>
+                <x-info-tip placement="bottom" text="Create an invoice by choosing the seller profile, customer, date, supply place, status, and line items. Tax totals update as items change." />
+            </div>
+            <p class="module-subtitle hidden md:block">Enter invoice details, add products, and review calculated GST totals before saving.</p>
         </div>
     </x-slot>
 
@@ -10,10 +14,13 @@
         <form @submit.prevent="submit()" class="mx-auto max-w-4xl space-y-6">
             {{-- Invoice Basics --}}
             <div class="card-lg">
-                <h3 class="panel-title mb-4">Invoice Details</h3>
+                <div class="mb-4 flex items-center gap-2">
+                    <h3 class="panel-title !mt-0">Invoice Details</h3>
+                    <x-info-tip text="Start by choosing the seller, buyer, invoice date, transaction type, supply state, and status." />
+                </div>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <div class="form-group">
-                        <label class="form-label">Business Profile *</label>
+                        <label class="form-label">Business Profile * <x-info-tip text="Seller profile whose GSTIN and state are used for this invoice." /></label>
                         <select x-model="form.business_profile_id" class="form-select" required @change="onProfileChange()">
                             <option value="">Select profile</option>
                             @foreach($profiles as $p)
@@ -22,7 +29,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Customer *</label>
+                        <label class="form-label">Customer * <x-info-tip text="Buyer record used for customer name, GSTIN, state, and supply checks." /></label>
                         <select x-model="form.customer_id" class="form-select" required>
                             <option value="">Select customer</option>
                             <template x-for="c in customers" :key="c.id || c._id">
@@ -35,14 +42,14 @@
                         <input type="date" x-model="form.invoice_date" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Transaction Type</label>
+                        <label class="form-label">Transaction Type <x-info-tip text="Sale invoices record outward supply. Purchase invoices can be used for inward tracking." /></label>
                         <select x-model="form.transaction_type" class="form-select">
                             <option value="sale">Sale</option>
                             <option value="purchase">Purchase</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Place of Supply</label>
+                        <label class="form-label">Place of Supply <x-info-tip text="Select a state manually or leave blank to let the server infer it from customer details." /></label>
                         <select x-model="form.place_of_supply" class="form-select">
                             <option value="">Auto-detect</option>
                             @foreach($stateCodes as $sc)
@@ -64,7 +71,10 @@
             {{-- Line Items --}}
             <div class="card-lg">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="panel-title">Line Items</h3>
+                    <div class="flex items-center gap-2">
+                        <h3 class="panel-title !mt-0">Line Items</h3>
+                        <x-info-tip text="Add products or custom line items. Quantity, rate, and tax rate drive the taxable and tax totals." />
+                    </div>
                     <button type="button" @click="addItem()" class="btn btn-secondary btn-sm">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                         Add Item
@@ -81,7 +91,7 @@
                         </div>
                         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                             <div class="form-group lg:col-span-2">
-                                <label class="form-label text-[10px]">Product</label>
+                                <label class="form-label text-[10px]">Product <x-info-tip text="Selecting a saved product can fill product name, HSN code, rate, and tax rate." /></label>
                                 <select x-model="item.product_id" class="form-select text-sm" @change="fillProduct(idx)">
                                     <option value="">Select or type</option>
                                     <template x-for="p in products" :key="p.id || p._id">
@@ -91,9 +101,9 @@
                             </div>
                             <div class="form-group"><label class="form-label text-[10px]">Product Name</label><input x-model="item.product_name" class="form-input text-sm"></div>
                             <div class="form-group"><label class="form-label text-[10px]">HSN Code</label><input x-model="item.hsn_code" class="form-input text-sm font-mono"></div>
-                            <div class="form-group"><label class="form-label text-[10px]">Quantity</label><input type="number" min="1" x-model.number="item.quantity" class="form-input text-sm" @input="recalc()"></div>
+                            <div class="form-group"><label class="form-label text-[10px]">Quantity <x-info-tip text="Quantity multiplied by rate gives the taxable base for this line." /></label><input type="number" min="1" x-model.number="item.quantity" class="form-input text-sm" @input="recalc()"></div>
                             <div class="form-group"><label class="form-label text-[10px]">Rate (₹)</label><input type="number" step="0.01" x-model.number="item.rate" class="form-input text-sm" @input="recalc()"></div>
-                            <div class="form-group"><label class="form-label text-[10px]">Tax Rate (%)</label><input type="number" step="0.01" x-model.number="item.tax_rate" class="form-input text-sm" @input="recalc()"></div>
+                            <div class="form-group"><label class="form-label text-[10px]">Tax Rate (%) <x-info-tip text="GST percentage for this item. The saved invoice calculation will finalize CGST/SGST or IGST server-side." /></label><input type="number" step="0.01" x-model.number="item.tax_rate" class="form-input text-sm" @input="recalc()"></div>
                             <div class="form-group">
                                 <label class="form-label text-[10px]">Line Total</label>
                                 <div class="form-input bg-slate-50 font-semibold text-slate-900" x-text="'₹ ' + gst.formatNumber(item.line_total)"></div>
@@ -109,7 +119,10 @@
 
             {{-- Totals --}}
             <div class="card-lg">
-                <h3 class="panel-title mb-4">Tax Summary</h3>
+                <div class="mb-4 flex items-center gap-2">
+                    <h3 class="panel-title !mt-0">Tax Summary</h3>
+                    <x-info-tip text="Live preview of taxable value and GST split. Final tax treatment is calculated by the API when the invoice is saved." />
+                </div>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     <div class="rounded-xl bg-slate-50 p-4 text-center"><div class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-1">Taxable Value</div><div class="text-xl font-bold" x-text="'₹ ' + gst.formatNumber(totals.taxable)"></div></div>
                     <div class="rounded-xl bg-sky-50 p-4 text-center"><div class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-1">CGST</div><div class="text-xl font-bold text-sky-700" x-text="'₹ ' + gst.formatNumber(totals.cgst)"></div></div>

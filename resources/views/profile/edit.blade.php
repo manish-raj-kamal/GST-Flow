@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Account</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Profile Settings</h1>
+            <p class="module-kicker">Account</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Profile Settings</h1>
+                <x-info-tip placement="bottom" text="Update your name, email, password, and account status from this page. Test accounts may have some security restrictions." />
+            </div>
+            <p class="module-subtitle hidden md:block">Manage your account identity and security preferences.</p>
         </div>
     </x-slot>
 

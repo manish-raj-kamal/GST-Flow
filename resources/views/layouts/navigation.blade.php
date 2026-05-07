@@ -102,7 +102,7 @@
     {{-- Sidebar Footer --}}
     <div class="sidebar-footer border-t border-slate-200 px-4 py-4">
         <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-xs font-bold text-white">
+            <div class="avatar-mark h-9 w-9">
                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
             </div>
             <div class="sidebar-user-details min-w-0 flex-1">

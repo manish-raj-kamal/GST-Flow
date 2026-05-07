@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Configuration</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Tax Slabs</h1>
+            <p class="module-kicker">Configuration</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Tax Slabs</h1>
+                <x-info-tip placement="bottom" text="Tax slabs are the reusable GST rates offered to HSN codes, products, and invoice line items." />
+            </div>
+            <p class="module-subtitle hidden md:block">Keep GST rate masters active and ready for catalog or invoice selection.</p>
         </div>
     </x-slot>
 
@@ -20,7 +24,7 @@
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <template x-for="slab in slabs" :key="slab.id || slab._id">
                 <div class="card text-center cursor-pointer" @click="openModal(slab)">
-                    <div class="text-3xl font-extrabold sm:text-4xl" :class="{'text-emerald-500': slab.rate == 0, 'text-sky-500': slab.rate == 5, 'text-amber-500': slab.rate == 12, 'text-orange-500': slab.rate == 18, 'text-red-500': slab.rate == 28, 'text-slate-700': ![0,5,12,18,28].includes(Number(slab.rate))}" x-text="slab.rate + '%'"></div>
+                    <div class="text-3xl font-extrabold sm:text-4xl" :class="{'text-emerald-500': slab.rate == 0, 'text-sky-500': slab.rate == 5, 'text-amber-500': slab.rate == 12, 'text-cyan-700': slab.rate == 18, 'text-red-500': slab.rate == 28, 'text-slate-700': ![0,5,12,18,28].includes(Number(slab.rate))}" x-text="slab.rate + '%'"></div>
                     <div class="mt-2 text-sm font-semibold text-slate-700" x-text="slab.name"></div>
                     <div class="mt-1 text-xs text-slate-400" x-text="slab.effective_date ? 'Effective: ' + gst.formatDate(slab.effective_date) : ''"></div>
                     <span class="mt-2 badge" :class="slab.status === 'active' ? 'badge-active' : 'badge-inactive'" x-text="slab.status"></span>
@@ -42,8 +46,8 @@
                     </div>
                     <form @submit.prevent="save()" class="space-y-4">
                         <div class="form-group"><label class="form-label">Name *</label><input x-model="form.name" class="form-input" required placeholder="e.g. GST 18%"></div>
-                        <div class="form-group"><label class="form-label">Rate (%) *</label><input type="number" step="0.01" x-model="form.rate" class="form-input" required></div>
-                        <div class="form-group"><label class="form-label">Effective Date</label><input type="date" x-model="form.effective_date" class="form-input"></div>
+                        <div class="form-group"><label class="form-label">Rate (%) * <x-info-tip text="The GST percentage available to HSN codes, products, and invoice item tax rates." /></label><input type="number" step="0.01" x-model="form.rate" class="form-input" required></div>
+                        <div class="form-group"><label class="form-label">Effective Date <x-info-tip text="Optional date from which this rate should be considered active." /></label><input type="date" x-model="form.effective_date" class="form-input"></div>
                         <div class="form-group"><label class="form-label">Status</label><select x-model="form.status" class="form-select"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                         <div class="flex justify-end gap-3 pt-2">
                             <button type="button" @click="showModal = false" class="btn btn-secondary">Cancel</button>

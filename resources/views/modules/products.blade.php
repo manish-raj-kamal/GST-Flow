@@ -1,8 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Catalog</p>
-            <h1 class="mt-1 text-xl font-bold text-slate-900">Products</h1>
+            <p class="module-kicker">Catalog</p>
+            <div class="page-title-row">
+                <h1 class="module-title">Products</h1>
+                <x-info-tip placement="bottom" text="Products store HSN code, GST rate, unit, and price so invoice line items can be filled accurately with fewer manual steps." />
+            </div>
+            <p class="module-subtitle hidden md:block">Build reusable catalog items with HSN and tax details for faster invoice entry.</p>
         </div>
     </x-slot>
 
@@ -72,7 +76,7 @@
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="form-group sm:col-span-2"><label class="form-label">Product Name *</label><input x-model="form.product_name" class="form-input" required></div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Description</label><input x-model="form.description" class="form-input"></div>
-                            <div class="form-group"><label class="form-label">HSN Code *</label>
+                            <div class="form-group"><label class="form-label">HSN Code * <x-info-tip text="Selecting an HSN can auto-fill category, description, and GST rate when available." /></label>
                                 <select x-model="form.hsn_code" class="form-select" required @change="autoFillHsn()">
                                     <option value="">Select HSN</option>
                                     @foreach($hsnCodes as $h)
@@ -84,8 +88,8 @@
                             <div class="form-group"><label class="form-label">Unit</label>
                                 <select x-model="form.unit" class="form-select"><option value="NOS">NOS</option><option value="KGS">KGS</option><option value="MTR">MTR</option><option value="LTR">LTR</option><option value="SQM">SQM</option><option value="PCS">PCS</option><option value="SET">SET</option><option value="HRS">HRS</option></select>
                             </div>
-                            <div class="form-group"><label class="form-label">Price (₹) *</label><input type="number" step="0.01" x-model="form.price" class="form-input" required></div>
-                            <div class="form-group"><label class="form-label">GST Rate (%) *</label>
+                            <div class="form-group"><label class="form-label">Price (₹) * <x-info-tip text="Base item price before GST. The invoice adds tax separately." /></label><input type="number" step="0.01" x-model="form.price" class="form-input" required></div>
+                            <div class="form-group"><label class="form-label">GST Rate (%) * <x-info-tip text="Rate used when this product is added to invoice line items." /></label>
                                 <select x-model="form.gst_rate" class="form-select" required>
                                     @foreach($taxSlabs as $s)<option value="{{ $s->rate }}">{{ $s->rate }}%</option>@endforeach
                                 </select>
