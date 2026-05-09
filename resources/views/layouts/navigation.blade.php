@@ -9,12 +9,12 @@
        @keydown.escape.window="sidebarOpen = false">
 
     {{-- Brand --}}
-    <div class="gst-sidebar-brand">
+    <a href="{{ url('/') }}" class="gst-sidebar-brand" aria-label="Go to landing page">
         <div class="brand-icon">
             <img src="{{ asset('gst-flow-logo.svg') }}" alt="{{ config('app.name') }} logo">
         </div>
         <span class="brand-text">{{ config('app.name') }}</span>
-    </div>
+    </a>
 
     <button type="button"
             class="sidebar-collapse-button"
