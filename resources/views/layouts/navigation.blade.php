@@ -9,10 +9,12 @@
        @keydown.escape.window="sidebarOpen = false">
 
     {{-- Brand --}}
-    <div class="gst-sidebar-brand">
-        <div class="brand-icon">GST</div>
+    <a href="{{ url('/') }}" class="gst-sidebar-brand" aria-label="Go to landing page">
+        <div class="brand-icon">
+            <img src="{{ asset('gst-flow-logo.svg') }}" alt="{{ config('app.name') }} logo">
+        </div>
         <span class="brand-text">{{ config('app.name') }}</span>
-    </div>
+    </a>
 
     <button type="button"
             class="sidebar-collapse-button"
@@ -27,7 +29,7 @@
     </button>
 
     {{-- Navigation --}}
-    <nav class="gst-sidebar-nav">
+    <nav class="gst-sidebar-nav" @click.capture="persistSidebarState()">
 
         <div class="nav-section-title">Overview</div>
         <a href="{{ route('dashboard') }}" class="nav-item {{ $currentRoute === 'dashboard' ? 'active' : '' }}" aria-label="Dashboard" title="Dashboard">

@@ -4,25 +4,25 @@
 
 @layer base {
     :root {
-        --gst-primary: 202 56% 24%;
-        --gst-primary-dark: 203 64% 17%;
-        --gst-accent: 158 28% 40%;
-        --gst-surface: 48 33% 97%;
-        --gst-sidebar: 0 0% 100%;
-        --gst-sidebar-hover: 48 24% 95%;
+        --gst-primary: 214 58% 27%;
+        --gst-primary-dark: 214 61% 20%;
+        --gst-accent: 168 39% 38%;
+        --gst-surface: 210 40% 97%;
+        --gst-sidebar: 210 38% 99%;
+        --gst-sidebar-hover: 210 32% 95%;
         --gst-glass: rgba(255, 255, 255, 0.78);
         --gst-text: 206 30% 15%;
         --gst-text-muted: 204 11% 44%;
-        --gst-border: 43 19% 84%;
+        --gst-border: 215 26% 86%;
         --gst-success: 150 45% 36%;
         --gst-danger: 0 85% 55%;
         --gst-warning: 36 72% 45%;
         --gst-info: 199 55% 38%;
-        --radius-card: 0.5rem;
-        --radius-btn: 0.625rem;
-        --radius-input: 0.5rem;
-        --shadow-card: 0 1px 2px rgba(17, 50, 66, 0.05), 0 12px 32px rgba(17, 50, 66, 0.07);
-        --shadow-card-hover: 0 4px 12px rgba(17, 50, 66, 0.07), 0 18px 40px rgba(17, 50, 66, 0.10);
+        --radius-card: 0.875rem;
+        --radius-btn: 0.75rem;
+        --radius-input: 0.75rem;
+        --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.04), 0 14px 36px rgba(15, 23, 42, 0.06);
+        --shadow-card-hover: 0 8px 20px rgba(15, 23, 42, 0.08), 0 22px 52px rgba(15, 23, 42, 0.11);
         --shadow-modal: 0 25px 50px -12px rgba(0,0,0,0.25);
         --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
         --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -51,22 +51,32 @@
         @apply fixed left-0 top-0 bottom-0 z-50 flex w-64 flex-col overflow-y-auto border-r bg-white;
         border-color: hsl(var(--gst-border));
         background:
-            linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,247,241,0.94)),
-            repeating-linear-gradient(135deg, rgba(21, 76, 96, 0.025) 0 1px, transparent 1px 8px),
+            radial-gradient(120% 64% at 0% 0%, rgba(37, 99, 235, 0.08), rgba(255,255,255,0) 56%),
+            radial-gradient(120% 64% at 100% 100%, rgba(20, 184, 166, 0.08), rgba(255,255,255,0) 52%),
+            linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.96)),
             hsl(var(--gst-sidebar));
-        box-shadow: 10px 0 30px rgba(17, 50, 66, 0.05);
+        box-shadow: 12px 0 30px rgba(15, 23, 42, 0.06);
         transition: width var(--transition-normal), transform var(--transition-normal);
     }
 
     .gst-sidebar-brand {
         @apply flex items-center gap-3 px-5 py-5;
         border-bottom: 1px solid hsl(var(--gst-border) / 0.7);
+        text-decoration: none;
+        color: inherit;
     }
 
     .gst-sidebar-brand .brand-icon {
-        @apply flex h-10 w-10 items-center justify-center rounded-lg text-white font-extrabold text-sm;
-        background: hsl(var(--gst-primary));
-        box-shadow: 0 10px 24px hsl(var(--gst-primary) / 0.20);
+        @apply flex h-10 w-10 items-center justify-center rounded-lg;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid hsl(var(--gst-border));
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+        padding: 0.25rem;
+    }
+
+    .gst-sidebar-brand .brand-icon img {
+        @apply h-full w-full;
+        object-fit: contain;
     }
 
     .gst-sidebar-brand .brand-text {
@@ -94,13 +104,15 @@
     }
 
     .nav-item:hover {
-        @apply bg-white text-slate-950;
-        box-shadow: 0 8px 22px rgba(17, 50, 66, 0.06);
+        @apply text-slate-950;
+        background: hsl(var(--gst-primary) / 0.07);
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
     }
 
     .nav-item.active {
-        @apply bg-white text-slate-950;
-        box-shadow: 0 10px 26px rgba(17, 50, 66, 0.08);
+        @apply text-slate-950;
+        background: hsl(var(--gst-primary) / 0.11);
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
     }
 
     .nav-item.active::before {
@@ -127,11 +139,11 @@
     .gst-main {
         @apply ml-0 min-h-screen lg:ml-64;
         background:
-            linear-gradient(180deg, rgba(255,255,255,0.72), rgba(244,243,236,0.88)),
-            repeating-linear-gradient(135deg, rgba(21, 76, 96, 0.026) 0 1px, transparent 1px 8px),
-            repeating-linear-gradient(45deg, rgba(72, 104, 87, 0.018) 0 1px, transparent 1px 16px),
+            radial-gradient(96% 72% at 4% 0%, rgba(59, 130, 246, 0.08), rgba(255,255,255,0) 54%),
+            radial-gradient(96% 72% at 96% 10%, rgba(20, 184, 166, 0.07), rgba(255,255,255,0) 56%),
+            linear-gradient(180deg, rgba(255,255,255,0.76), rgba(248,250,252,0.92)),
             hsl(var(--gst-surface));
-        background-size: auto, 8px 8px, 16px 16px, auto;
+        background-size: auto;
         transition: margin-left var(--transition-normal);
     }
 
@@ -139,9 +151,9 @@
     .gst-topbar {
         @apply sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 sm:px-6 lg:px-8;
         border-color: hsl(var(--gst-border));
-        background: rgba(255, 255, 252, 0.86);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
         box-shadow: 0 1px 0 rgba(255,255,255,0.6);
     }
 
@@ -163,6 +175,7 @@
         @apply relative border bg-white p-5;
         border-radius: var(--radius-card);
         border-color: hsl(var(--gst-border));
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95));
         box-shadow: var(--shadow-card);
         transition: box-shadow var(--transition-normal), transform var(--transition-normal);
     }
@@ -176,6 +189,7 @@
         @apply relative border bg-white p-6;
         border-radius: var(--radius-card);
         border-color: hsl(var(--gst-border));
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95));
         box-shadow: var(--shadow-card);
     }
 
@@ -183,6 +197,7 @@
         @apply relative border bg-white p-5;
         border-radius: var(--radius-card);
         border-color: hsl(var(--gst-border));
+        background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(248,250,252,0.96));
         box-shadow: var(--shadow-card);
         transition: box-shadow var(--transition-normal), transform var(--transition-fast);
     }
@@ -373,8 +388,9 @@
         border-radius: var(--radius-card);
         border-color: hsl(var(--gst-border));
         background:
-            linear-gradient(180deg, rgba(255,255,255,0.94), rgba(250,249,244,0.92)),
-            repeating-linear-gradient(135deg, rgba(21, 76, 96, 0.032) 0 1px, transparent 1px 8px),
+            radial-gradient(95% 140% at 0% 0%, rgba(37, 99, 235, 0.12), rgba(255,255,255,0) 46%),
+            radial-gradient(90% 140% at 100% 100%, rgba(20, 184, 166, 0.10), rgba(255,255,255,0) 40%),
+            linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.94)),
             #ffffff;
         box-shadow: var(--shadow-card);
     }
@@ -425,6 +441,7 @@
         @apply border bg-white p-4 shadow-sm;
         border-radius: var(--radius-card);
         border-color: hsl(var(--gst-border));
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95));
     }
 
     .workflow-step-number {
@@ -611,11 +628,16 @@
         justify-content: center;
         flex-shrink: 0;
         border-radius: 0.875rem;
-        background: linear-gradient(135deg, rgb(var(--auth-primary)), rgb(var(--auth-secondary)));
-        color: #fff;
-        font-size: 0.78rem;
-        font-weight: 700;
-        box-shadow: 0 14px 32px rgba(var(--auth-primary), 0.26);
+        background: #ffffff;
+        border: 1px solid rgba(148, 163, 184, 0.38);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.15);
+        padding: 0.3rem;
+    }
+
+    .auth-mark img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
     }
 
     .auth-story-copy {
@@ -1311,42 +1333,57 @@
     }
 
     @media (min-width: 1024px) {
-        .is-sidebar-collapsed .gst-sidebar {
+        .is-sidebar-collapsed .gst-sidebar,
+        .sidebar-collapsed-init .gst-sidebar {
             width: 5rem;
         }
 
-        .is-sidebar-collapsed .gst-main {
+        .is-sidebar-collapsed .gst-main,
+        .sidebar-collapsed-init .gst-main {
             margin-left: 5rem;
         }
 
-        .is-sidebar-collapsed .gst-sidebar-brand {
+        .is-sidebar-collapsed .gst-sidebar-brand,
+        .sidebar-collapsed-init .gst-sidebar-brand {
             @apply justify-center px-3;
         }
 
-        .is-sidebar-collapsed .sidebar-collapse-button {
+        .is-sidebar-collapsed .sidebar-collapse-button,
+        .sidebar-collapsed-init .sidebar-collapse-button {
             @apply mx-auto;
         }
 
         .is-sidebar-collapsed .gst-sidebar-brand .brand-text,
         .is-sidebar-collapsed .nav-section-title,
         .is-sidebar-collapsed .nav-label,
+        .sidebar-collapsed-init .gst-sidebar-brand .brand-text,
+        .sidebar-collapsed-init .nav-section-title,
+        .sidebar-collapsed-init .nav-label,
         .is-sidebar-collapsed .sidebar-user-details {
             display: none;
         }
 
-        .is-sidebar-collapsed .gst-sidebar-nav {
+        .sidebar-collapsed-init .sidebar-user-details {
+            display: none;
+        }
+
+        .is-sidebar-collapsed .gst-sidebar-nav,
+        .sidebar-collapsed-init .gst-sidebar-nav {
             @apply px-3;
         }
 
-        .is-sidebar-collapsed .nav-item {
+        .is-sidebar-collapsed .nav-item,
+        .sidebar-collapsed-init .nav-item {
             @apply h-10 justify-center px-0;
         }
 
-        .is-sidebar-collapsed .sidebar-footer {
+        .is-sidebar-collapsed .sidebar-footer,
+        .sidebar-collapsed-init .sidebar-footer {
             @apply px-0;
         }
 
-        .is-sidebar-collapsed .sidebar-footer > div {
+        .is-sidebar-collapsed .sidebar-footer > div,
+        .sidebar-collapsed-init .sidebar-footer > div {
             @apply justify-center;
         }
     }

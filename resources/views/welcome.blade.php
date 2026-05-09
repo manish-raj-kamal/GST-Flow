@@ -220,11 +220,16 @@
             border-radius: var(--radius-sm);
             display: grid;
             place-items: center;
-            color: #fff;
-            font-size: 12px;
-            line-height: 16px;
-            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.34);
+            background: #ffffff;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+            padding: 4px;
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .nav-links {
@@ -984,7 +989,9 @@
         <div class="container">
             <nav class="nav" aria-label="Main">
                 <a class="brand" href="{{ url('/') }}">
-                    <span class="brand-mark">GST</span>
+                    <span class="brand-mark">
+                        <img src="{{ asset('gst-flow-logo.svg') }}" alt="{{ config('app.name') }} logo">
+                    </span>
                     <span>{{ config('app.name') }}</span>
                 </a>
                 <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav-links" aria-label="Toggle navigation">
