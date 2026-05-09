@@ -30,8 +30,12 @@
       "dest": "/public/robots.txt"
     },
     {
+      "src": "/api/(.*)",
+      "dest": "/api/index.php?uri=/api/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/index.php"
+      "dest": "/api/index.php?uri=/$1"
     }
   ],
   "env": {
