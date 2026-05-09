@@ -48,7 +48,9 @@
             <div class="auth-stage">
                 <section class="auth-story" aria-label="{{ config('app.name') }}">
                     <a href="/" class="auth-brand">
-                        <span class="auth-mark">GST</span>
+                        <span class="auth-mark">
+                            <img src="{{ asset('gst-flow-logo.svg') }}" alt="{{ config('app.name') }} logo">
+                        </span>
                         <span>{{ config('app.name') }}</span>
                     </a>
 
@@ -71,7 +73,9 @@
 
                 <main class="auth-panel">
                     <a href="/" class="auth-mobile-brand">
-                        <span class="auth-mark">GST</span>
+                        <span class="auth-mark">
+                            <img src="{{ asset('gst-flow-logo.svg') }}" alt="{{ config('app.name') }} logo">
+                        </span>
                         <span>{{ config('app.name') }}</span>
                     </a>
 

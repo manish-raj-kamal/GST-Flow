@@ -64,9 +64,16 @@
     }
 
     .gst-sidebar-brand .brand-icon {
-        @apply flex h-10 w-10 items-center justify-center rounded-lg text-white font-extrabold text-sm;
-        background: hsl(var(--gst-primary));
-        box-shadow: 0 10px 24px hsl(var(--gst-primary) / 0.20);
+        @apply flex h-10 w-10 items-center justify-center rounded-lg;
+        background: #ffffff;
+        border: 1px solid hsl(var(--gst-border));
+        box-shadow: 0 10px 24px rgba(17, 50, 66, 0.12);
+        padding: 0.25rem;
+    }
+
+    .gst-sidebar-brand .brand-icon img {
+        @apply h-full w-full;
+        object-fit: contain;
     }
 
     .gst-sidebar-brand .brand-text {
@@ -611,11 +618,16 @@
         justify-content: center;
         flex-shrink: 0;
         border-radius: 0.875rem;
-        background: linear-gradient(135deg, rgb(var(--auth-primary)), rgb(var(--auth-secondary)));
-        color: #fff;
-        font-size: 0.78rem;
-        font-weight: 700;
-        box-shadow: 0 14px 32px rgba(var(--auth-primary), 0.26);
+        background: #ffffff;
+        border: 1px solid rgba(148, 163, 184, 0.38);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.15);
+        padding: 0.3rem;
+    }
+
+    .auth-mark img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
     }
 
     .auth-story-copy {
@@ -1311,42 +1323,57 @@
     }
 
     @media (min-width: 1024px) {
-        .is-sidebar-collapsed .gst-sidebar {
+        .is-sidebar-collapsed .gst-sidebar,
+        .sidebar-collapsed-init .gst-sidebar {
             width: 5rem;
         }
 
-        .is-sidebar-collapsed .gst-main {
+        .is-sidebar-collapsed .gst-main,
+        .sidebar-collapsed-init .gst-main {
             margin-left: 5rem;
         }
 
-        .is-sidebar-collapsed .gst-sidebar-brand {
+        .is-sidebar-collapsed .gst-sidebar-brand,
+        .sidebar-collapsed-init .gst-sidebar-brand {
             @apply justify-center px-3;
         }
 
-        .is-sidebar-collapsed .sidebar-collapse-button {
+        .is-sidebar-collapsed .sidebar-collapse-button,
+        .sidebar-collapsed-init .sidebar-collapse-button {
             @apply mx-auto;
         }
 
         .is-sidebar-collapsed .gst-sidebar-brand .brand-text,
         .is-sidebar-collapsed .nav-section-title,
         .is-sidebar-collapsed .nav-label,
+        .sidebar-collapsed-init .gst-sidebar-brand .brand-text,
+        .sidebar-collapsed-init .nav-section-title,
+        .sidebar-collapsed-init .nav-label,
         .is-sidebar-collapsed .sidebar-user-details {
             display: none;
         }
 
-        .is-sidebar-collapsed .gst-sidebar-nav {
+        .sidebar-collapsed-init .sidebar-user-details {
+            display: none;
+        }
+
+        .is-sidebar-collapsed .gst-sidebar-nav,
+        .sidebar-collapsed-init .gst-sidebar-nav {
             @apply px-3;
         }
 
-        .is-sidebar-collapsed .nav-item {
+        .is-sidebar-collapsed .nav-item,
+        .sidebar-collapsed-init .nav-item {
             @apply h-10 justify-center px-0;
         }
 
-        .is-sidebar-collapsed .sidebar-footer {
+        .is-sidebar-collapsed .sidebar-footer,
+        .sidebar-collapsed-init .sidebar-footer {
             @apply px-0;
         }
 
-        .is-sidebar-collapsed .sidebar-footer > div {
+        .is-sidebar-collapsed .sidebar-footer > div,
+        .sidebar-collapsed-init .sidebar-footer > div {
             @apply justify-center;
         }
     }

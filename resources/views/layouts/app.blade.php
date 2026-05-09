@@ -15,17 +15,33 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script>
+            (function () {
+                try {
+                    if (localStorage.getItem('gst-sidebar-collapsed') === 'true') {
+                        document.documentElement.classList.add('sidebar-collapsed-init');
+                    }
+                } catch (e) {}
+            })();
+        </script>
     </head>
     <body class="font-sans antialiased"
         x-data="{
             sidebarOpen: false,
-            sidebarCollapsed: false,
-            init() {
+            sidebarCollapsed: (() => {
                 try {
-                    this.sidebarCollapsed = localStorage.getItem('gst-sidebar-collapsed') === 'true';
+                    return localStorage.getItem('gst-sidebar-collapsed') === 'true';
                 } catch (e) {
-                    this.sidebarCollapsed = false;
+                    return false;
                 }
+            })(),
+            init() {
+                document.documentElement.classList.toggle('sidebar-collapsed-init', this.sidebarCollapsed);
+            },
+            persistSidebarState() {
+                try {
+                    localStorage.setItem('gst-sidebar-collapsed', this.sidebarCollapsed);
+                } catch (e) {}
             },
             toggleSidebarCollapsed() {
                 this.sidebarCollapsed = !this.sidebarCollapsed;
@@ -33,6 +49,8 @@
                 try {
                     localStorage.setItem('gst-sidebar-collapsed', this.sidebarCollapsed);
                 } catch (e) {}
+
+                document.documentElement.classList.toggle('sidebar-collapsed-init', this.sidebarCollapsed);
             },
         }"
         :class="{ 'is-sidebar-collapsed': sidebarCollapsed }">
