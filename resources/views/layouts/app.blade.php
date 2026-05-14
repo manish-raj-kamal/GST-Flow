@@ -11,7 +11,7 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -66,7 +66,7 @@
             {{-- Topbar --}}
             <header class="gst-topbar">
                 <div class="flex min-w-0 items-center gap-3">
-                    <button @click="sidebarOpen = !sidebarOpen" class="btn-ghost rounded-lg p-2 lg:hidden">
+                    <button @click="sidebarOpen = !sidebarOpen" class="btn-ghost rounded-[20px] p-2 lg:hidden">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                     <div class="min-w-0">
@@ -81,20 +81,20 @@
 
                     {{-- User Menu --}}
                     <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" class="flex items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-sm font-semibold text-slate-600 transition-all hover:bg-white hover:shadow-sm">
+                        <button @click="open = !open" class="flex min-h-[44px] items-center gap-2 rounded-[20px] border border-transparent px-3 py-2 text-sm font-bold transition-all hover:bg-white/70 hover:shadow-[var(--shadow-card)]">
                             <div class="avatar-mark h-8 w-8">
                                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                             </div>
                             <span class="hidden sm:inline">{{ Auth::user()->name }}</span>
-                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 20 20"><path stroke-linecap="round" stroke-linejoin="round" d="M6 8l4 4 4-4"/></svg>
+                            <svg class="h-4 w-4 text-[#635F69]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 20 20"><path stroke-linecap="round" stroke-linejoin="round" d="M6 8l4 4 4-4"/></svg>
                         </button>
 
                         <div x-show="open" @click.outside="open = false" x-transition
-                            class="absolute right-0 mt-2 w-48 rounded-lg border bg-white py-1 shadow-lg" style="border-color: hsl(var(--gst-border));">
-                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Profile Settings</a>
+                            class="absolute right-0 mt-2 w-52 rounded-[24px] border bg-white/85 p-2 shadow-[var(--shadow-card)] backdrop-blur-xl" style="border-color: rgba(255,255,255,0.72);">
+                            <a href="{{ route('profile.edit') }}" class="block rounded-[16px] px-4 py-2 text-sm font-bold text-[#332F3A] hover:bg-[#EFEBF5]">Profile Settings</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">Log Out</button>
+                                <button type="submit" class="block w-full rounded-[16px] px-4 py-2 text-left text-sm font-bold text-[#332F3A] hover:bg-[#EFEBF5]">Log Out</button>
                             </form>
                         </div>
                     </div>

@@ -102,14 +102,14 @@
     </nav>
 
     {{-- Sidebar Footer --}}
-    <div class="sidebar-footer border-t border-slate-200 px-4 py-4">
+    <div class="sidebar-footer border-t px-4 py-4" style="border-color: hsl(var(--gst-border) / 0.56);">
         <div class="flex items-center gap-3">
             <div class="avatar-mark h-9 w-9">
                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
             </div>
             <div class="sidebar-user-details min-w-0 flex-1">
-                <div class="truncate text-sm font-medium text-slate-800">{{ Auth::user()->name }}</div>
-                <div class="truncate text-[11px] text-slate-500">{{ Auth::user()->role === 'admin' ? 'Administrator' : 'Business User' }}</div>
+                <div class="truncate text-sm font-bold text-[#332F3A]">{{ Auth::user()->name }}</div>
+                <div class="truncate text-[11px] font-medium text-[#635F69]">{{ Auth::user()->role === 'admin' ? 'Administrator' : 'Business User' }}</div>
             </div>
         </div>
     </div>
