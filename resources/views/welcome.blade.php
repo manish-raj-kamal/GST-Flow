@@ -688,40 +688,572 @@
             font-weight: 600;
         }
 
-        .grid-3 {
+        .workflow-shell {
+            --ball-cycle: 8.4s;
+            position: relative;
+            border-radius: var(--radius-lg);
+            border: 1px solid #dbeafe;
+            padding: var(--space-5);
+            background:
+                radial-gradient(540px 220px at 10% -16%, rgba(245, 158, 11, 0.17), transparent 72%),
+                radial-gradient(540px 260px at 102% 16%, rgba(59, 130, 246, 0.2), transparent 72%),
+                linear-gradient(145deg, #f8fafc, #eef4ff 60%, #f0f9ff);
+            box-shadow: 0 20px 52px rgba(30, 64, 175, 0.13);
+            overflow: hidden;
+        }
+
+        .workflow-shell::before {
+            content: '';
+            position: absolute;
+            top: -76px;
+            right: -52px;
+            width: 240px;
+            height: 220px;
+            pointer-events: none;
+            background: linear-gradient(145deg, rgba(148, 163, 184, 0.08), rgba(191, 219, 254, 0.44));
+            clip-path: polygon(26% 0, 100% 0, 100% 100%, 0 70%);
+        }
+
+        .workflow-shell::after {
+            content: '';
+            position: absolute;
+            left: -56px;
+            bottom: -96px;
+            width: 280px;
+            height: 200px;
+            pointer-events: none;
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.12), rgba(56, 189, 248, 0.2));
+            clip-path: polygon(0 24%, 72% 0, 100% 86%, 0 100%);
+        }
+
+        .workflow-grid {
+            position: relative;
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: var(--space-3);
+            padding-top: 126px;
+            perspective: 1200px;
+            transform-style: preserve-3d;
         }
 
-        .card {
+        .workflow-grid::before {
+            content: '';
+            position: absolute;
+            top: 88px;
+            left: calc(16.66% - 12px);
+            right: calc(16.66% - 12px);
+            height: 4px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(199, 210, 254, 0.9), rgba(147, 197, 253, 0.88));
+            box-shadow: 0 0 24px rgba(191, 219, 254, 0.56);
+            z-index: 1;
+        }
+
+        .workflow-ball-track {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .workflow-ball-glow,
+        .workflow-ball-shadow,
+        .workflow-ball {
+            position: absolute;
+            left: 0;
+        }
+
+        .workflow-ball {
+            top: 44px;
+            left: calc(16.66% - 26px);
+            width: 52px;
+            height: 52px;
+            border-radius: 999px;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.92) 0 22%, rgba(255, 255, 255, 0.18) 40%, transparent 58%),
+                radial-gradient(circle at 64% 68%, #bfdbfe 0%, #60a5fa 42%, #2563eb 82%);
+            box-shadow:
+                0 16px 26px rgba(37, 99, 235, 0.42),
+                0 0 0 8px rgba(191, 219, 254, 0.16);
+            opacity: 0.6;
+            animation: workflow-ball-motion var(--ball-cycle) cubic-bezier(0.5, 0, 0.25, 1) infinite;
+        }
+
+        .workflow-ball::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 40% 36%, rgba(255, 255, 255, 0.48), rgba(147, 197, 253, 0.26) 58%, transparent 88%);
+            filter: blur(5px);
+        }
+
+        .workflow-ball-shadow {
+            top: 126px;
+            left: calc(16.66% - 32px);
+            width: 64px;
+            height: 14px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.4);
+            filter: blur(5px);
+            animation: workflow-ball-shadow-motion var(--ball-cycle) cubic-bezier(0.5, 0, 0.25, 1) infinite;
+        }
+
+        .workflow-ball-glow {
+            top: 4px;
+            left: calc(16.66% - 26px);
+            width: 196px;
+            height: 196px;
+            margin-left: -72px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(191, 219, 254, 0.18) 0%, rgba(147, 197, 253, 0.08) 40%, transparent 74%);
+            filter: blur(12px);
+            opacity: 0;
+            animation: workflow-ball-glow-motion var(--ball-cycle) linear infinite;
+        }
+
+        .workflow-card {
+            position: relative;
+            z-index: 3;
             border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            background: var(--surface);
+            border: 1px solid rgba(199, 210, 254, 0.56);
+            background: linear-gradient(160deg, rgba(248, 250, 252, 0.96), rgba(238, 242, 255, 0.84));
+            backdrop-filter: blur(2px);
             padding: var(--space-4);
-            box-shadow: var(--shadow);
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2);
+            transform-origin: center top;
+            transform: translate3d(0, 0, 0);
+            will-change: transform, box-shadow;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
         }
 
-        .card p {
+        .workflow-card::before,
+        .workflow-card::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: inherit;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .workflow-card::before {
+            background: radial-gradient(circle at 50% 0%, rgba(186, 230, 253, 0.24), rgba(125, 211, 252, 0.1) 42%, transparent 74%);
+            filter: blur(8px);
+        }
+
+        .workflow-card::after {
+            inset: -20px;
+            border-radius: 24px;
+            border: 2px solid rgba(191, 219, 254, 0.14);
+            transform: scale(0.8);
+        }
+
+        .workflow-card.step-1 {
+            animation: workflow-card-pulse-1 var(--ball-cycle) ease-in-out infinite;
+        }
+
+        .workflow-card.step-1::before {
+            animation: workflow-card-glow-1 var(--ball-cycle) ease-in-out infinite;
+        }
+
+        .workflow-card.step-1::after {
+            animation: workflow-card-ring-1 var(--ball-cycle) ease-out infinite;
+        }
+
+        .workflow-card.step-2 {
+            animation: workflow-card-pulse-2 var(--ball-cycle) ease-in-out infinite;
+        }
+
+        .workflow-card.step-2::before {
+            animation: workflow-card-glow-2 var(--ball-cycle) ease-in-out infinite;
+        }
+
+        .workflow-card.step-2::after {
+            animation: workflow-card-ring-2 var(--ball-cycle) ease-out infinite;
+        }
+
+        .workflow-card.step-3 {
+            animation: workflow-card-pulse-3 var(--ball-cycle) ease-in-out infinite;
+        }
+
+        .workflow-card.step-3::before {
+            animation: workflow-card-glow-3 var(--ball-cycle) ease-in-out infinite;
+        }
+
+        .workflow-card.step-3::after {
+            animation: workflow-card-ring-3 var(--ball-cycle) ease-out infinite;
+        }
+
+        .workflow-shell:not(.is-animating) .workflow-ball,
+        .workflow-shell:not(.is-animating) .workflow-ball-shadow,
+        .workflow-shell:not(.is-animating) .workflow-ball-glow,
+        .workflow-shell:not(.is-animating) .workflow-card,
+        .workflow-shell:not(.is-animating) .workflow-card::before,
+        .workflow-shell:not(.is-animating) .workflow-card::after {
+            animation-play-state: paused !important;
+        }
+
+        .workflow-card h4,
+        .workflow-card p {
+            color: #1e1b4b;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        .workflow-card p {
             margin-top: var(--space-2);
         }
 
         .step-index {
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border-radius: 999px;
             display: grid;
             place-items: center;
-            background: #fffbeb;
-            color: #b45309;
+            background: linear-gradient(145deg, #2563eb, #1d4ed8);
+            color: #ffffff;
             font-size: 13px;
             line-height: 16px;
             font-weight: 700;
-            border: 1px solid #fde68a;
+            border: 2px solid #bfdbfe;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
             margin-bottom: var(--space-2);
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        @keyframes workflow-ball-motion {
+            0%, 6% {
+                left: calc(16.66% - 26px);
+                transform: translateY(-66px) scale(1);
+                opacity: 0.6;
+            }
+
+            8%, 12% {
+                left: calc(16.66% - 26px);
+                transform: translateY(30px) scale(1.08, 0.9);
+                opacity: 0.6;
+            }
+
+            24% {
+                left: calc(34% - 26px);
+                transform: translateY(-56px) scale(0.96);
+            }
+
+            32%, 36% {
+                left: calc(50% - 26px);
+                transform: translateY(30px) scale(1.08, 0.9);
+            }
+
+            48% {
+                left: calc(67% - 26px);
+                transform: translateY(-56px) scale(0.96);
+            }
+
+            56%, 60% {
+                left: calc(83.33% - 26px);
+                transform: translateY(30px) scale(1.08, 0.9);
+            }
+
+            72% {
+                left: calc(83.33% - 26px);
+                transform: translateY(30px) scale(1);
+                opacity: 0.6;
+            }
+
+            78% {
+                left: calc(83.33% - 26px);
+                transform: translateY(30px) scale(1);
+                opacity: 0;
+            }
+
+            79% {
+                left: calc(16.66% - 26px);
+                transform: translateY(-66px) scale(1);
+                opacity: 0;
+            }
+
+            84%, 100% {
+                left: calc(16.66% - 26px);
+                transform: translateY(-66px) scale(1);
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes workflow-ball-shadow-motion {
+            0%, 6% {
+                left: calc(16.66% - 32px);
+                transform: scaleX(0.48);
+                opacity: 0.12;
+            }
+
+            8%, 12% {
+                left: calc(16.66% - 32px);
+                transform: scaleX(1.2);
+                opacity: 0.48;
+            }
+
+            24% {
+                left: calc(34% - 32px);
+                transform: scaleX(0.62);
+                opacity: 0.16;
+            }
+
+            32%, 36% {
+                left: calc(50% - 32px);
+                transform: scaleX(1.2);
+                opacity: 0.48;
+            }
+
+            48% {
+                left: calc(67% - 32px);
+                transform: scaleX(0.62);
+                opacity: 0.16;
+            }
+
+            56%, 60% {
+                left: calc(83.33% - 32px);
+                transform: scaleX(1.2);
+                opacity: 0.48;
+            }
+
+            78% {
+                left: calc(83.33% - 32px);
+                opacity: 0;
+            }
+
+            79% {
+                left: calc(16.66% - 32px);
+                transform: scaleX(0.48);
+                opacity: 0;
+            }
+
+            84%, 100% {
+                left: calc(16.66% - 32px);
+                transform: scaleX(0.48);
+                opacity: 0.12;
+            }
+        }
+
+        @keyframes workflow-ball-glow-motion {
+            0%, 6% {
+                left: calc(16.66% - 26px);
+                transform: translateY(-46px) scale(0.72);
+                opacity: 0.04;
+            }
+
+            8%, 12% {
+                left: calc(16.66% - 26px);
+                transform: translateY(18px) scale(1.02);
+                opacity: 0.12;
+            }
+
+            24%, 28% {
+                left: calc(34% - 26px);
+                transform: translateY(-30px) scale(1.04);
+                opacity: 0.1;
+            }
+
+            32%, 36% {
+                left: calc(50% - 26px);
+                transform: translateY(20px) scale(1.18);
+                opacity: 0.14;
+            }
+
+            48%, 52% {
+                left: calc(67% - 26px);
+                transform: translateY(-30px) scale(1.08);
+                opacity: 0.1;
+            }
+
+            56%, 60% {
+                left: calc(83.33% - 26px);
+                transform: translateY(20px) scale(1.18);
+                opacity: 0.14;
+            }
+
+            78% {
+                left: calc(83.33% - 26px);
+                opacity: 0;
+            }
+
+            79% {
+                left: calc(16.66% - 26px);
+                transform: translateY(-46px) scale(0.72);
+                opacity: 0;
+            }
+
+            84%, 100% {
+                left: calc(16.66% - 26px);
+                transform: translateY(-46px) scale(0.72);
+                opacity: 0.04;
+            }
+        }
+
+        @keyframes workflow-card-pulse-1 {
+            0%, 7%, 100% {
+                transform: translate3d(0, 0, 0) rotateX(0deg);
+                box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2);
+                border-color: rgba(199, 210, 254, 0.56);
+            }
+
+            8% {
+                transform: translate3d(0, -1px, 8px) rotateX(-7deg);
+                box-shadow: 0 28px 50px rgba(37, 99, 235, 0.32);
+                border-color: rgba(125, 211, 252, 0.94);
+            }
+
+            9% {
+                transform: translate3d(-0.6px, -0.8px, 5px) rotateX(-4deg);
+            }
+
+            10% {
+                transform: translate3d(0.5px, -0.4px, 3px) rotateX(-2.5deg);
+            }
+
+            11% {
+                transform: translate3d(-0.35px, 0, 1.6px) rotateX(-1.4deg);
+            }
+
+            12% {
+                transform: translate3d(0.25px, 0, 0.8px) rotateX(-0.8deg);
+            }
+
+            13%, 36% {
+                transform: translate3d(0, 0, 0) rotateX(0deg);
+            }
+        }
+
+        @keyframes workflow-card-pulse-2 {
+            0%, 31%, 100% {
+                transform: translate3d(0, 0, 0) rotateX(0deg);
+                box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2);
+                border-color: rgba(199, 210, 254, 0.56);
+            }
+
+            32% {
+                transform: translate3d(0, -1px, 8px) rotateX(-7deg);
+                box-shadow: 0 28px 50px rgba(37, 99, 235, 0.32);
+                border-color: rgba(125, 211, 252, 0.94);
+            }
+
+            33% {
+                transform: translate3d(-0.6px, -0.8px, 5px) rotateX(-4deg);
+            }
+
+            34% {
+                transform: translate3d(0.5px, -0.4px, 3px) rotateX(-2.5deg);
+            }
+
+            35% {
+                transform: translate3d(-0.35px, 0, 1.6px) rotateX(-1.4deg);
+            }
+
+            36% {
+                transform: translate3d(0.25px, 0, 0.8px) rotateX(-0.8deg);
+            }
+
+            37%, 60% {
+                transform: translate3d(0, 0, 0) rotateX(0deg);
+            }
+        }
+
+        @keyframes workflow-card-pulse-3 {
+            0%, 55%, 100% {
+                transform: translate3d(0, 0, 0) rotateX(0deg);
+                box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2);
+                border-color: rgba(199, 210, 254, 0.56);
+            }
+
+            56% {
+                transform: translate3d(0, -1px, 8px) rotateX(-7deg);
+                box-shadow: 0 28px 50px rgba(37, 99, 235, 0.32);
+                border-color: rgba(125, 211, 252, 0.94);
+            }
+
+            57% {
+                transform: translate3d(-0.6px, -0.8px, 5px) rotateX(-4deg);
+            }
+
+            58% {
+                transform: translate3d(0.5px, -0.4px, 3px) rotateX(-2.5deg);
+            }
+
+            59% {
+                transform: translate3d(-0.35px, 0, 1.6px) rotateX(-1.4deg);
+            }
+
+            60% {
+                transform: translate3d(0.25px, 0, 0.8px) rotateX(-0.8deg);
+            }
+
+            61%, 64% {
+                transform: translate3d(0, 0, 0) rotateX(0deg);
+            }
+        }
+
+        @keyframes workflow-card-glow-1 {
+            0%, 7%, 100% { opacity: 0; }
+            8%, 14% { opacity: 0.2; }
+        }
+
+        @keyframes workflow-card-glow-2 {
+            0%, 31%, 100% { opacity: 0; }
+            32%, 38% { opacity: 0.2; }
+        }
+
+        @keyframes workflow-card-glow-3 {
+            0%, 55%, 100% { opacity: 0; }
+            56%, 62% { opacity: 0.2; }
+        }
+
+        @keyframes workflow-card-ring-1 {
+            0%, 7%, 100% { opacity: 0; transform: scale(0.8); }
+            8% { opacity: 0.14; transform: scale(0.86); }
+            14% { opacity: 0; transform: scale(1.08); }
+        }
+
+        @keyframes workflow-card-ring-2 {
+            0%, 31%, 100% { opacity: 0; transform: scale(0.8); }
+            32% { opacity: 0.14; transform: scale(0.86); }
+            38% { opacity: 0; transform: scale(1.08); }
+        }
+
+        @keyframes workflow-card-ring-3 {
+            0%, 55%, 100% { opacity: 0; transform: scale(0.8); }
+            56% { opacity: 0.14; transform: scale(0.86); }
+            62% { opacity: 0; transform: scale(1.08); }
+        }
+
+        .platform-shell {
+            position: relative;
+            border-radius: var(--radius-lg);
+            border: 1px solid #dbeafe;
+            padding: var(--space-5);
+            background:
+                radial-gradient(500px 220px at 0% 0%, rgba(14, 165, 233, 0.15), transparent 68%),
+                radial-gradient(460px 220px at 100% 100%, rgba(99, 102, 241, 0.14), transparent 70%),
+                linear-gradient(140deg, #ffffff, #f3f7ff 58%, #eff6ff);
+            box-shadow: 0 20px 54px rgba(30, 64, 175, 0.12);
+            overflow: hidden;
+        }
+
+        .platform-shell::before {
+            content: '';
+            position: absolute;
+            top: -72px;
+            left: -48px;
+            width: 216px;
+            height: 168px;
+            background: linear-gradient(145deg, rgba(14, 165, 233, 0.18), rgba(59, 130, 246, 0.1));
+            clip-path: polygon(0 0, 100% 0, 74% 100%, 0 76%);
         }
 
         .platform-grid {
+            position: relative;
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: var(--space-3);
@@ -729,14 +1261,34 @@
 
         .platform-card {
             border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            background: #ffffff;
+            border: 1px solid rgba(191, 219, 254, 0.86);
             padding: var(--space-4);
-            box-shadow: var(--shadow);
+            box-shadow: 0 12px 30px rgba(30, 64, 175, 0.09);
+            background: linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.82));
+        }
+
+        .platform-card:nth-child(2n) {
+            background: linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(224, 242, 254, 0.88));
         }
 
         .platform-card h4 {
             margin-bottom: var(--space-2);
+        }
+
+        .platform-tag {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 4px 12px;
+            margin-bottom: var(--space-2);
+            font-size: 11px;
+            line-height: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            color: #1d4ed8;
+            border: 1px solid rgba(147, 197, 253, 0.8);
+            background: rgba(219, 234, 254, 0.72);
         }
 
         .stats-grid {
@@ -859,12 +1411,27 @@
                 transform: none;
             }
 
-            .grid-3 {
+            .workflow-grid {
                 grid-template-columns: 1fr;
+                padding-top: 0;
             }
 
             .platform-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .workflow-grid::before {
+                display: none;
+            }
+
+            .workflow-ball-track {
+                display: none;
+            }
+
+            .workflow-card,
+            .workflow-card::before,
+            .workflow-card::after {
+                animation: none;
             }
 
             .stats-grid {
@@ -899,8 +1466,24 @@
                 padding: var(--space-5);
             }
 
+            .workflow-shell,
+            .platform-shell {
+                padding: var(--space-4);
+            }
+
             .shape {
                 display: none;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .workflow-ball,
+            .workflow-ball-shadow,
+            .workflow-ball-glow,
+            .workflow-card,
+            .workflow-card::before,
+            .workflow-card::after {
+                animation: none !important;
             }
         }
 
@@ -1106,24 +1689,31 @@
             <div class="container">
                 <div class="section-head" data-reveal>
                     <p class="kicker">Workflow</p>
-                    <h2>A structured process from invoice creation to compliance output.</h2>
+                    <h2>Simple steps from invoice to filing-ready output.</h2>
                 </div>
-                <div class="grid-3">
-                    <article class="card" data-reveal>
-                        <span class="step-index">01</span>
-                        <h4>Capture transaction data</h4>
-                        <p>Create invoices with HSN mapping, customer GST details, and place-of-supply context built in from the first step.</p>
-                    </article>
-                    <article class="card" data-reveal>
-                        <span class="step-index">02</span>
-                        <h4>Apply GST logic automatically</h4>
-                        <p>Calculate CGST, SGST, or IGST using deterministic rules so every invoice follows the same tax treatment model.</p>
-                    </article>
-                    <article class="card" data-reveal>
-                        <span class="step-index">03</span>
-                        <h4>Publish filing-ready reports</h4>
-                        <p>Generate GSTR-aligned summaries and exports for internal review, audit checks, and monthly compliance handoff.</p>
-                    </article>
+                <div class="workflow-shell" data-reveal>
+                    <div class="workflow-grid">
+                        <div class="workflow-ball-track" aria-hidden="true">
+                            <span class="workflow-ball-glow"></span>
+                            <span class="workflow-ball-shadow"></span>
+                            <span class="workflow-ball"></span>
+                        </div>
+                        <article class="workflow-card step-1">
+                            <span class="step-index">01</span>
+                            <h4>Capture transaction data</h4>
+                            <p>Add invoice details once with HSN, GSTIN, and place of supply captured up front.</p>
+                        </article>
+                        <article class="workflow-card step-2">
+                            <span class="step-index">02</span>
+                            <h4>Apply GST logic automatically</h4>
+                            <p>The platform applies CGST, SGST, or IGST rules instantly using your invoice context.</p>
+                        </article>
+                        <article class="workflow-card step-3">
+                            <span class="step-index">03</span>
+                            <h4>Publish filing-ready reports</h4>
+                            <p>Generate GSTR-ready reports and exports for review and direct compliance handoff.</p>
+                        </article>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1132,25 +1722,31 @@
             <div class="container">
                 <div class="section-head" data-reveal>
                     <p class="kicker">Platform Surface</p>
-                    <h2>Every core GST function available in one consistent system.</h2>
+                    <h2>Everything needed for GST operations in one clean workspace.</h2>
                 </div>
-                <div class="platform-grid">
-                    <article class="platform-card" data-reveal>
-                        <h4>Invoice Operations</h4>
-                        <p>Create, version, and export invoices with line-level tax details and compliant formatting out of the box.</p>
-                    </article>
-                    <article class="platform-card" data-reveal>
-                        <h4>Validation Engine</h4>
-                        <p>Run GSTIN structure checks, state code extraction, and PAN matching before invoice approval.</p>
-                    </article>
-                    <article class="platform-card" data-reveal>
-                        <h4>Analytics & Monitoring</h4>
-                        <p>Track revenue, tax collection, customer spread, and monthly filing indicators from one dashboard.</p>
-                    </article>
-                    <article class="platform-card" data-reveal>
-                        <h4>Controlled Access</h4>
-                        <p>Manage role-based permissions for admins and business users while keeping audit activity visible.</p>
-                    </article>
+                <div class="platform-shell" data-reveal>
+                    <div class="platform-grid">
+                        <article class="platform-card">
+                            <span class="platform-tag">Create</span>
+                            <h4>Invoice Operations</h4>
+                            <p>Create, edit, and export invoices with line-level GST details in a guided flow.</p>
+                        </article>
+                        <article class="platform-card">
+                            <span class="platform-tag">Validate</span>
+                            <h4>Validation Engine</h4>
+                            <p>Verify GSTIN format, state code, and PAN alignment before moving to approval.</p>
+                        </article>
+                        <article class="platform-card">
+                            <span class="platform-tag">Track</span>
+                            <h4>Analytics & Monitoring</h4>
+                            <p>Monitor revenue, tax totals, and filing indicators from one visual dashboard.</p>
+                        </article>
+                        <article class="platform-card">
+                            <span class="platform-tag">Control</span>
+                            <h4>Controlled Access</h4>
+                            <p>Assign role-based access with visible audit actions to keep operations secure.</p>
+                        </article>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1226,6 +1822,7 @@
             const nav = document.querySelector('.nav');
             const navToggle = document.querySelector('.nav-toggle');
             const navLinks = document.querySelector('.nav-links');
+            const workflowShell = document.querySelector('.workflow-shell');
 
             const closeNavMenu = () => {
                 if (!nav || !navToggle) {
@@ -1324,8 +1921,22 @@
                 }, { threshold: 0.18, rootMargin: '0px 0px -48px 0px' });
 
                 revealNodes.forEach((node) => observer.observe(node));
+
+                if (workflowShell) {
+                    const workflowObserver = new IntersectionObserver((entries) => {
+                        for (const entry of entries) {
+                            if (entry.isIntersecting) {
+                                workflowShell.classList.add('is-animating');
+                                workflowObserver.unobserve(entry.target);
+                            }
+                        }
+                    }, { threshold: 0.45, rootMargin: '0px 0px -12% 0px' });
+
+                    workflowObserver.observe(workflowShell);
+                }
             } else {
                 revealNodes.forEach((node) => node.classList.add('is-visible'));
+                workflowShell?.classList.add('is-animating');
             }
 
             updateReceiptEdges();

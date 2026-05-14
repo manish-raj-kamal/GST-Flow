@@ -80,23 +80,29 @@
                 </div>
             </section>
 
-            <section class="workflow-steps">
-                @foreach ([
-                    ['title' => 'Profile', 'desc' => 'Confirm seller GSTIN and state before billing.', 'tip' => 'Business profiles hold seller GSTIN, PAN, address, and state details reused across invoices.'],
-                    ['title' => 'Customers', 'desc' => 'Add GSTIN and state for accurate supply type.', 'tip' => 'Customer state helps identify intrastate vs interstate supply for CGST/SGST or IGST.'],
-                    ['title' => 'Products', 'desc' => 'Map HSN, price, unit, and GST rate.', 'tip' => 'Products speed up invoice entry and reduce rate or HSN mistakes.'],
-                    ['title' => 'Invoices', 'desc' => 'Create documents and let tax totals calculate.', 'tip' => 'Invoices combine seller, customer, product, tax, and status data into one auditable transaction.'],
-                    ['title' => 'Reports', 'desc' => 'Review liability and export summaries.', 'tip' => 'Reports and GSTR summaries help review monthly totals before compliance filing.'],
-                ] as $index => $step)
-                    <article class="workflow-step">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="workflow-step-number">{{ $index + 1 }}</div>
-                            <x-info-tip text="{{ $step['tip'] }}" />
-                        </div>
-                        <h3 class="text-sm font-bold text-slate-950">{{ $step['title'] }}</h3>
-                        <p class="mt-2 text-xs leading-5 text-slate-500">{{ $step['desc'] }}</p>
-                    </article>
-                @endforeach
+            <section class="workflow-steps-shell">
+                <div class="mb-4 sm:mb-5">
+                    <p class="panel-label">Workflow</p>
+                    <h3 class="panel-title">Simple steps to move from data entry to compliance output.</h3>
+                </div>
+                <div class="workflow-steps">
+                    @foreach ([
+                        ['title' => 'Profile', 'desc' => 'Confirm seller GSTIN and state before billing.', 'tip' => 'Business profiles hold seller GSTIN, PAN, address, and state details reused across invoices.'],
+                        ['title' => 'Customers', 'desc' => 'Add GSTIN and state for accurate supply type.', 'tip' => 'Customer state helps identify intrastate vs interstate supply for CGST/SGST or IGST.'],
+                        ['title' => 'Products', 'desc' => 'Map HSN, price, unit, and GST rate.', 'tip' => 'Products speed up invoice entry and reduce rate or HSN mistakes.'],
+                        ['title' => 'Invoices', 'desc' => 'Create documents and let tax totals calculate.', 'tip' => 'Invoices combine seller, customer, product, tax, and status data into one auditable transaction.'],
+                        ['title' => 'Reports', 'desc' => 'Review liability and export summaries.', 'tip' => 'Reports and GSTR summaries help review monthly totals before compliance filing.'],
+                    ] as $index => $step)
+                        <article class="workflow-step">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="workflow-step-number">{{ $index + 1 }}</div>
+                                <x-info-tip text="{{ $step['tip'] }}" />
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-950">{{ $step['title'] }}</h3>
+                            <p class="mt-2 text-xs leading-5 text-slate-500">{{ $step['desc'] }}</p>
+                        </article>
+                    @endforeach
+                </div>
             </section>
 
             <section id="overview" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -298,22 +304,23 @@
                 </article>
             </section>
 
-            <section id="modules" class="card-lg">
+            <section id="modules" class="card-lg platform-surface">
                 <div>
                     <div class="flex items-center gap-2">
                         <p class="panel-label">Module coverage</p>
                         <x-info-tip text="These are the main implemented areas of the platform and the purpose each one serves in the GST workflow." />
                     </div>
-                    <h3 class="panel-title">Implemented platform areas</h3>
+                    <h3 class="panel-title">Platform surface made for day-to-day GST operations</h3>
                 </div>
                 <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     @foreach ([
-                        ['title' => 'Business Profiles', 'desc' => 'GSTIN validation, PAN extraction, uniqueness checks, and reusable seller identity.'],
-                        ['title' => 'Customers & Catalog', 'desc' => 'Customer GST state detection plus reusable products, HSN codes, and tax slabs.'],
-                        ['title' => 'Invoices & Tax Engine', 'desc' => 'Auto numbering, per-item breakdowns, intrastate vs interstate GST logic, and version history.'],
-                        ['title' => 'Reports & Exports', 'desc' => 'Dashboard analytics, monthly GST summaries, GSTR-style output, PDF invoices, CSV, and XLS exports.'],
+                        ['tag' => 'Profile', 'title' => 'Business Profiles', 'desc' => 'GSTIN validation, PAN extraction, uniqueness checks, and reusable seller identity.'],
+                        ['tag' => 'Catalog', 'title' => 'Customers & Catalog', 'desc' => 'Customer GST state detection plus reusable products, HSN codes, and tax slabs.'],
+                        ['tag' => 'Process', 'title' => 'Invoices & Tax Engine', 'desc' => 'Auto numbering, per-item breakdowns, intrastate vs interstate GST logic, and version history.'],
+                        ['tag' => 'Output', 'title' => 'Reports & Exports', 'desc' => 'Dashboard analytics, monthly GST summaries, GSTR-style output, PDF invoices, CSV, and XLS exports.'],
                     ] as $module)
-                        <article class="rounded-lg border border-slate-200 bg-slate-50 p-5">
+                        <article class="platform-module-card">
+                            <span class="platform-module-tag">{{ $module['tag'] }}</span>
                             <h4 class="text-base font-bold text-slate-950">{{ $module['title'] }}</h4>
                             <p class="mt-2 text-sm leading-6 text-slate-600">{{ $module['desc'] }}</p>
                         </article>

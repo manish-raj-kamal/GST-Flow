@@ -433,20 +433,98 @@
         background: hsl(var(--gst-warning));
     }
 
+    .workflow-steps-shell {
+        @apply relative overflow-hidden border p-5 sm:p-6;
+        border-radius: var(--radius-card);
+        border-color: hsl(var(--gst-border));
+        background:
+            radial-gradient(560px 220px at 8% -22%, rgba(245, 158, 11, 0.16), transparent 72%),
+            radial-gradient(520px 230px at 102% 10%, rgba(14, 165, 233, 0.2), transparent 72%),
+            linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 255, 0.92));
+        box-shadow: var(--shadow-card-hover);
+    }
+
+    .workflow-steps-shell::before {
+        content: '';
+        position: absolute;
+        top: -68px;
+        right: -54px;
+        width: 210px;
+        height: 180px;
+        background: linear-gradient(150deg, rgba(148, 163, 184, 0.12), rgba(191, 219, 254, 0.46));
+        clip-path: polygon(24% 0, 100% 0, 100% 100%, 0 72%);
+        pointer-events: none;
+    }
+
     .workflow-steps {
-        @apply grid gap-3 sm:grid-cols-2 xl:grid-cols-5;
+        @apply relative grid gap-3 sm:grid-cols-2 xl:grid-cols-5;
+    }
+
+    .workflow-steps::before {
+        content: '';
+        position: absolute;
+        top: 1rem;
+        left: 5%;
+        right: 5%;
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(245, 158, 11, 0.62), rgba(59, 130, 246, 0.36), rgba(56, 189, 248, 0.54));
+        z-index: 0;
     }
 
     .workflow-step {
-        @apply border bg-white p-4 shadow-sm;
+        @apply relative border p-4 shadow-sm;
         border-radius: var(--radius-card);
-        border-color: hsl(var(--gst-border));
-        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95));
+        border-color: hsl(var(--gst-border) / 0.9);
+        background: linear-gradient(160deg, rgba(255, 255, 255, 0.97), rgba(239, 246, 255, 0.84));
+        z-index: 1;
     }
 
     .workflow-step-number {
-        @apply mb-3 flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold text-white;
-        background: hsl(var(--gst-primary));
+        @apply mb-3 flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white;
+        background: linear-gradient(145deg, #f59e0b, #f97316);
+        box-shadow: 0 10px 20px rgba(251, 146, 60, 0.28);
+        border: 2px solid rgba(255, 237, 213, 0.9);
+    }
+
+    .platform-surface {
+        @apply relative overflow-hidden;
+        background:
+            radial-gradient(460px 200px at 0% 0%, rgba(14, 165, 233, 0.14), transparent 70%),
+            radial-gradient(430px 220px at 100% 100%, rgba(99, 102, 241, 0.14), transparent 72%),
+            linear-gradient(140deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 255, 0.94));
+        border-color: hsl(var(--gst-border) / 0.9);
+    }
+
+    .platform-surface::before {
+        content: '';
+        position: absolute;
+        top: -72px;
+        left: -48px;
+        width: 208px;
+        height: 168px;
+        background: linear-gradient(145deg, rgba(14, 165, 233, 0.16), rgba(59, 130, 246, 0.12));
+        clip-path: polygon(0 0, 100% 0, 74% 100%, 0 76%);
+        pointer-events: none;
+    }
+
+    .platform-module-card {
+        @apply relative border p-5;
+        border-radius: var(--radius-card);
+        border-color: hsl(var(--gst-border) / 0.82);
+        background: linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.86));
+        box-shadow: var(--shadow-card);
+    }
+
+    .platform-module-card:nth-child(2n) {
+        background: linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(224, 242, 254, 0.9));
+    }
+
+    .platform-module-tag {
+        @apply mb-2 inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em];
+        border-color: hsl(var(--gst-info) / 0.26);
+        color: hsl(var(--gst-info));
+        background: hsl(var(--gst-info) / 0.08);
     }
 
     /* ── Auth Screens ── */
@@ -1523,6 +1601,10 @@
 
         .panel-title {
             @apply text-base;
+        }
+
+        .workflow-steps::before {
+            display: none;
         }
 
         .btn {
