@@ -2,23 +2,23 @@
 
 namespace App\Models;
 
-class TaxSlab extends DocumentModel
+class GstRule extends DocumentModel
 {
-    protected $table = 'tax_slabs';
+    protected $table = 'gst_rules';
 
     protected $fillable = [
-        'name',
-        'rate',
-        'effective_date',
+        'rule_key',
+        'rule_name',
+        'config',
         'effective_from',
         'effective_to',
         'status',
     ];
 
     protected $casts = [
-        'rate' => 'float',
-        'effective_date' => 'date',
+        'config' => 'array',
         'effective_from' => 'date',
         'effective_to' => 'date',
     ];
 }
+

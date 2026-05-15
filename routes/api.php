@@ -7,9 +7,11 @@ use App\Http\Controllers\Api\BusinessProfileController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportController;
+use App\Http\Controllers\Api\GstRuleController;
 use App\Http\Controllers\Api\GstrSummaryController;
 use App\Http\Controllers\Api\HsnCodeController;
 use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\GstNotificationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\TaxSlabController;
@@ -33,9 +35,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('business-profiles', BusinessProfileController::class);
     Route::apiResource('customers', CustomerController::class);
+    Route::get('products/audit/tax-rates', [ProductController::class, 'auditTaxRates']);
     Route::apiResource('products', ProductController::class);
+    Route::get('hsn-codes/catalog', [HsnCodeController::class, 'catalog']);
+    Route::post('hsn-codes/sync', [HsnCodeController::class, 'sync']);
     Route::apiResource('hsn-codes', HsnCodeController::class);
     Route::apiResource('tax-slabs', TaxSlabController::class);
+    Route::get('gst-rules', [GstRuleController::class, 'index']);
+    Route::post('gst-rules', [GstRuleController::class, 'store']);
+    Route::put('gst-rules/{gstRule}', [GstRuleController::class, 'update']);
     Route::post('invoices/{invoice}/duplicate', [InvoiceController::class, 'duplicate']);
     Route::get('invoices/{invoice}/versions', [InvoiceController::class, 'versions']);
     Route::patch('invoices/{invoice}/status', [InvoiceController::class, 'updateStatus']);
@@ -58,6 +66,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('gstr-summary', [GstrSummaryController::class, 'index']);
     Route::get('activity-logs', [ActivityLogController::class, 'index']);
+    Route::get('gst-notifications', [GstNotificationController::class, 'index']);
+    Route::patch('gst-notifications/{notification}/read', [GstNotificationController::class, 'markRead']);
 
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::get('/users', [AdminController::class, 'users']);

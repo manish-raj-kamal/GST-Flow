@@ -38,4 +38,8 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
     ],
+
+    'hsn_catalog' => [
+        'sources' => array_values(array_filter(array_map('trim', explode(',', (string) env('HSN_CATALOG_SOURCES', ''))))),
+    ],
 ];

@@ -14,14 +14,50 @@
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="search-bar max-w-sm flex-1">
                 <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" x-model="search" placeholder="Search HSN codes..." class="flex-1">
+                <input type="text" x-model="search" @input="fetchCatalog()" placeholder="Search item, category, or HSN..." class="flex-1">
             </div>
             @if(auth()->user()->isAdmin())
-            <button @click="openModal()" class="btn btn-primary">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                Add HSN Code
-            </button>
+            <div class="flex gap-2">
+                <button @click="syncCatalog()" class="btn btn-secondary">
+                    Sync HSN Catalog
+                </button>
+                <button @click="openModal()" class="btn btn-primary">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    Add HSN Code
+                </button>
+            </div>
             @endif
+        </div>
+
+        <div class="card-lg mb-6" x-show="groupedResults.length > 0 || loadingCatalog">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="panel-title !mt-0">HSN Categories</h3>
+                <span class="text-xs text-slate-500" x-show="loadingCatalog">Loading...</span>
+            </div>
+            <div class="space-y-2" x-show="!loadingCatalog">
+                <template x-for="group in groupedResults" :key="group.category">
+                    <details class="rounded-xl border p-3" style="border-color: hsl(var(--gst-border));">
+                        <summary class="cursor-pointer font-semibold text-slate-900">
+                            <span x-text="group.category"></span>
+                            <span class="text-xs text-slate-500 ml-2" x-text="'(' + group.count + ' items)'"></span>
+                        </summary>
+                        <div class="mt-3 overflow-x-auto">
+                            <table class="data-table">
+                                <thead><tr><th>HSN</th><th>Item</th><th>GST</th></tr></thead>
+                                <tbody>
+                                    <template x-for="item in group.items" :key="item.id">
+                                        <tr>
+                                            <td class="font-mono" x-text="item.hsn_code"></td>
+                                            <td x-text="item.description"></td>
+                                            <td><span class="badge badge-info" x-text="item.gst_rate + '%'"></span></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </template>
+            </div>
         </div>
 
         <div class="card-lg overflow-hidden">
@@ -92,9 +128,42 @@
                 editing: null,
                 saving: false,
                 form: {},
+                groupedResults: [],
+                loadingCatalog: false,
+                syncRunning: false,
                 get filtered() {
                     const q = this.search.toLowerCase();
                     return this.codes.filter(c => !q || (c.hsn_code||'').toLowerCase().includes(q) || (c.description||'').toLowerCase().includes(q));
+                },
+                async fetchCatalog() {
+                    this.loadingCatalog = true;
+                    try {
+                        const query = this.search ? `?search=${encodeURIComponent(this.search)}` : '';
+                        const res = await gst.api(`/hsn-codes/catalog${query}`);
+                        this.groupedResults = res.data || [];
+                    } catch (e) {
+                        this.groupedResults = [];
+                    }
+                    this.loadingCatalog = false;
+                },
+                async syncCatalog() {
+                    if (this.syncRunning) return;
+                    this.syncRunning = true;
+                    try {
+                        const res = await gst.api('/hsn-codes/sync', { method: 'POST', body: JSON.stringify({}) });
+                        gst.toast(`${res.message} Created: ${res.data.created}, Updated: ${res.data.updated}`, 'info');
+                        await this.reloadCodes();
+                    } catch (e) {
+                        gst.toast(e.message || 'Unable to sync catalog', 'error');
+                    }
+                    this.syncRunning = false;
+                },
+                async reloadCodes() {
+                    try {
+                        const res = await gst.api('/hsn-codes');
+                        this.codes = res.data || [];
+                        await this.fetchCatalog();
+                    } catch (e) {}
                 },
                 openModal(c = null) {
                     this.editing = c;
@@ -115,6 +184,9 @@
                 async remove(c) {
                     if (!confirm('Delete this HSN code?')) return;
                     try { await gst.api(`/hsn-codes/${c.id || c._id}`, { method: 'DELETE' }); this.codes = this.codes.filter(x => (x.id||x._id) !== (c.id||c._id)); gst.toast('Deleted'); } catch (e) { gst.toast(e.message, 'error'); }
+                },
+                init() {
+                    this.fetchCatalog();
                 },
             };
         }

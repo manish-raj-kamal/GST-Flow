@@ -14,9 +14,10 @@ use Illuminate\Http\Request;
 class InvoiceWorkflowService
 {
     public function __construct(
-        private readonly GstCalculationService $gstCalculationService,
+        private readonly TaxEngine $taxEngine,
         private readonly InvoiceNumberService $invoiceNumberService,
         private readonly GstinService $gstinService,
+        private readonly HsnCatalogSyncService $hsnCatalogSyncService,
         private readonly ActivityLogService $activityLogService,
     ) {
     }
@@ -25,7 +26,7 @@ class InvoiceWorkflowService
     {
         [$businessProfile, $customer, $sellerStateCode, $buyerStateCode, $sellerGstin, $buyerGstin] = $this->resolveContext($validated);
         $lineItems = $this->buildLineItems($validated['items'], $businessProfile->id);
-        $calculation = $this->gstCalculationService->calculate($lineItems, $sellerStateCode, $buyerStateCode);
+        $calculation = $this->taxEngine->calculate($sellerStateCode, $buyerStateCode, $lineItems);
 
         $invoice = Invoice::create([
             'business_profile_id' => $businessProfile->id,
@@ -67,7 +68,7 @@ class InvoiceWorkflowService
         $original = $this->snapshot($invoice);
         [$businessProfile, $customer, $sellerStateCode, $buyerStateCode, $sellerGstin, $buyerGstin] = $this->resolveContext($validated);
         $lineItems = $this->buildLineItems($validated['items'], $businessProfile->id);
-        $calculation = $this->gstCalculationService->calculate($lineItems, $sellerStateCode, $buyerStateCode);
+        $calculation = $this->taxEngine->calculate($sellerStateCode, $buyerStateCode, $lineItems);
 
         $invoice->fill([
             'business_profile_id' => $businessProfile->id,
@@ -199,12 +200,18 @@ class InvoiceWorkflowService
             $product = Product::query()->findOrFail($item['product_id']);
             abort_if($product->business_profile_id !== $businessProfileId, 422, 'Invoice item product does not belong to the selected business profile.');
 
+            $taxRate = (float) ($product->gst_rate ?? 0);
+            $catalogRate = $this->hsnCatalogSyncService->resolveCurrentRateForHsn((string) $product->hsn_code, $product->gst_rate);
+            if ($catalogRate !== null) {
+                $taxRate = (float) $catalogRate;
+            }
+
             return [
                 'product_name' => $product->product_name,
                 'hsn_code' => $product->hsn_code,
                 'quantity' => (float) $item['quantity'],
                 'rate' => (float) ($item['rate'] ?? $product->price),
-                'tax_rate' => (float) $product->gst_rate,
+                'tax_rate' => $taxRate,
             ];
         })->all();
     }

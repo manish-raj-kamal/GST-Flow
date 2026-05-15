@@ -8,6 +8,7 @@ use App\Models\BusinessProfile;
 use App\Models\HsnCode;
 use App\Models\Product;
 use App\Services\ActivityLogService;
+use App\Services\HsnCatalogSyncService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,6 +16,7 @@ class ProductController extends Controller
 {
     public function __construct(
         private readonly ActivityLogService $activityLogService,
+        private readonly HsnCatalogSyncService $hsnCatalogSyncService,
     ) {
     }
 
@@ -108,6 +110,33 @@ class ProductController extends Controller
         ], $request);
 
         return response()->json(['message' => 'Product deleted successfully.']);
+    }
+
+    public function auditTaxRates(Request $request): JsonResponse
+    {
+        $profile = $this->resolveBusinessProfile($request);
+
+        $rows = Product::query()
+            ->where('business_profile_id', $profile->id)
+            ->get()
+            ->map(function (Product $product): array {
+                $currentRate = $this->hsnCatalogSyncService->resolveCurrentRateForHsn((string) $product->hsn_code, $product->gst_rate);
+                $storedRate = (float) ($product->gst_rate ?? 0);
+                $isOutdated = $currentRate !== null && (float) $currentRate !== $storedRate;
+
+                return [
+                    'product_id' => $product->id,
+                    'product_name' => $product->product_name,
+                    'hsn_code' => $product->hsn_code,
+                    'stored_rate' => $storedRate,
+                    'current_rate' => $currentRate,
+                    'is_outdated' => $isOutdated,
+                ];
+            })
+            ->filter(fn (array $row): bool => $row['is_outdated'])
+            ->values();
+
+        return response()->json(['data' => $rows]);
     }
 
     private function resolveBusinessProfile(Request $request): BusinessProfile
