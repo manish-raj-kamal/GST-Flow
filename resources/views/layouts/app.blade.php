@@ -138,6 +138,17 @@
                     const el = document.createElement('div');
                     el.className = `toast toast-${type}`;
                     el.textContent = message;
+                    const palette = {
+                        success: { bg: '#065f46', fg: '#ffffff', border: 'rgba(255,255,255,0.26)' },
+                        error: { bg: '#991b1b', fg: '#ffffff', border: 'rgba(255,255,255,0.26)' },
+                        info: { bg: '#1e3a8a', fg: '#ffffff', border: 'rgba(255,255,255,0.26)' },
+                    };
+                    const tone = palette[type] || palette.success;
+                    el.style.background = tone.bg;
+                    el.style.color = tone.fg;
+                    el.style.border = `1px solid ${tone.border}`;
+                    el.style.boxShadow = '0 14px 28px rgba(16, 24, 40, 0.42)';
+                    el.style.textShadow = '0 1px 1px rgba(0,0,0,0.3)';
                     container.appendChild(el);
                     setTimeout(() => el.remove(), 3200);
                 },

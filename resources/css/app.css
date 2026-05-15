@@ -1526,23 +1526,33 @@
     }
 
     /* ── Toast ── */
+    #toast-container {
+        @apply fixed bottom-6 right-6 z-[100] flex max-w-[min(92vw,36rem)] flex-col gap-3;
+        pointer-events: none;
+    }
+
     .toast {
-        @apply fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3 text-sm font-bold text-white;
+        @apply flex items-start gap-3 px-5 py-3 text-sm font-bold text-white;
         border-radius: 1.25rem;
-        box-shadow: var(--shadow-button);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        box-shadow: 0 14px 28px rgba(16, 24, 40, 0.35);
+        line-height: 1.45;
+        letter-spacing: 0.01em;
+        word-break: break-word;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
         animation: slideUp 300ms ease, fadeOut 300ms ease 2700ms forwards;
     }
 
     .toast-success {
-        background: hsl(var(--gst-success));
+        background: #0f766e;
     }
 
     .toast-error {
-        background: hsl(var(--gst-danger));
+        background: #b91c1c;
     }
 
     .toast-info {
-        background: hsl(var(--gst-info));
+        background: #1d4ed8;
     }
 
     /* ── Mobile overlay ── */
@@ -1790,10 +1800,14 @@
             @apply rounded-xl p-4;
         }
 
-        .toast {
+        #toast-container {
             left: 0.75rem;
             right: 0.75rem;
             bottom: 0.75rem;
+            max-width: none;
+        }
+
+        .toast {
             @apply px-3 py-2 text-[13px];
         }
 

@@ -7,6 +7,17 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreInvoiceRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $transactionType = strtolower((string) $this->input('transaction_type'));
+
+        if ($transactionType === 'sale') {
+            $this->merge([
+                'transaction_type' => 'sales',
+            ]);
+        }
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */

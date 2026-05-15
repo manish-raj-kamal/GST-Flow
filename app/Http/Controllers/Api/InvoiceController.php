@@ -7,6 +7,7 @@ use App\Http\Requests\StoreInvoiceRequest;
 use App\Models\BusinessProfile;
 use App\Models\Invoice;
 use App\Models\InvoiceVersion;
+use App\Services\ActivityLogService;
 use App\Services\GstReportService;
 use App\Services\InvoiceWorkflowService;
 use Illuminate\Http\JsonResponse;
@@ -109,6 +110,43 @@ class InvoiceController extends Controller
 
         return response()->json([
             'data' => InvoiceVersion::query()->where('invoice_id', $invoice->id)->orderByDesc('edited_at')->get()->values(),
+        ]);
+    }
+
+    public function updateStatus(Request $request, Invoice $invoice, ActivityLogService $activityLogService): JsonResponse
+    {
+        $businessProfile = BusinessProfile::query()->findOrFail($invoice->business_profile_id);
+        $this->authorizeBusinessProfile($request, $businessProfile);
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:draft,issued,paid,cancelled,deleted'],
+        ]);
+
+        $originalStatus = $invoice->status;
+
+        $invoice->update([
+            'status' => $validated['status'],
+        ]);
+
+        InvoiceVersion::create([
+            'invoice_id' => $invoice->id,
+            'user_id' => $request->user()->id,
+            'original_values' => ['status' => $originalStatus],
+            'updated_values' => ['status' => $invoice->status],
+            'change_summary' => 'Invoice status updated',
+            'edited_at' => now(),
+        ]);
+
+        $activityLogService->log($request->user(), 'invoice_status_updated', [
+            'invoice_id' => $invoice->id,
+            'invoice_number' => $invoice->invoice_number,
+            'status' => $invoice->status,
+            'business_profile_id' => $invoice->business_profile_id,
+        ], $request);
+
+        return response()->json([
+            'message' => 'Invoice status updated successfully.',
+            'data' => $invoice->fresh(),
         ]);
     }
 

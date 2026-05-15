@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('tax-slabs', TaxSlabController::class);
     Route::post('invoices/{invoice}/duplicate', [InvoiceController::class, 'duplicate']);
     Route::get('invoices/{invoice}/versions', [InvoiceController::class, 'versions']);
+    Route::patch('invoices/{invoice}/status', [InvoiceController::class, 'updateStatus']);
     Route::apiResource('invoices', InvoiceController::class);
 
     Route::get('dashboard', [DashboardController::class, 'index']);

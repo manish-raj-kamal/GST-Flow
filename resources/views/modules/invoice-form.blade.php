@@ -30,7 +30,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Customer * <x-info-tip text="Buyer record used for customer name, GSTIN, state, and supply checks." /></label>
-                        <select x-model="form.customer_id" class="form-select" required>
+                        <select x-model="form.customer_id" class="form-select" required @change="recalc()">
                             <option value="">Select customer</option>
                             <template x-for="c in customers" :key="c.id || c._id">
                                 <option :value="c.id || c._id" x-text="c.customer_name"></option>
@@ -43,8 +43,8 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Transaction Type <x-info-tip text="Sale invoices record outward supply. Purchase invoices can be used for inward tracking." /></label>
-                        <select x-model="form.transaction_type" class="form-select">
-                            <option value="sale">Sale</option>
+                        <select x-model="form.transaction_type" class="form-select" @change="recalc()">
+                            <option value="sales">Sale</option>
                             <option value="purchase">Purchase</option>
                         </select>
                     </div>
@@ -145,15 +145,18 @@
     <script>
         function invoiceFormPage() {
             const profileId = '{{ $activeProfile?->id ?? '' }}';
+            const customers = @json($customers);
+            const profiles = @json($profiles);
             return {
-                customers: @json($customers),
+                customers,
                 products: @json($products),
+                profiles,
                 saving: false,
                 form: {
                     business_profile_id: profileId,
                     customer_id: '',
                     invoice_date: new Date().toISOString().split('T')[0],
-                    transaction_type: 'sale',
+                    transaction_type: 'sales',
                     place_of_supply: '',
                     status: 'draft',
                     items: [],
@@ -182,16 +185,38 @@
                         taxable += base;
                     });
                     const totalTax = this.form.items.reduce((s, i) => s + (i.tax_amount || 0), 0);
-                    // Simple split: if interstate use IGST, otherwise CGST/SGST
-                    const isInterstate = false; // determined server-side
+                    const isInterstate = this.isInterstateSupply();
                     this.totals = {
                         taxable: +taxable.toFixed(2),
-                        cgst: +(totalTax / 2).toFixed(2),
-                        sgst: +(totalTax / 2).toFixed(2),
-                        igst: 0,
+                        cgst: isInterstate ? 0 : +(totalTax / 2).toFixed(2),
+                        sgst: isInterstate ? 0 : +(totalTax / 2).toFixed(2),
+                        igst: isInterstate ? +totalTax.toFixed(2) : 0,
                         tax: +totalTax.toFixed(2),
                         total: +(taxable + totalTax).toFixed(2),
                     };
+                },
+                resolveStateCode(entity) {
+                    if (!entity) return '';
+                    if (entity.state_code) return String(entity.state_code).toUpperCase();
+                    if (entity.gstin && String(entity.gstin).length >= 2) return String(entity.gstin).substring(0, 2).toUpperCase();
+                    return '';
+                },
+                isInterstateSupply() {
+                    const profile = this.profiles.find(p => (p.id || p._id) === this.form.business_profile_id);
+                    const customer = this.customers.find(c => (c.id || c._id) === this.form.customer_id);
+                    if (!profile || !customer) return false;
+
+                    const transactionType = this.form.transaction_type;
+                    const sellerStateCode = transactionType === 'purchase'
+                        ? this.resolveStateCode(customer)
+                        : this.resolveStateCode(profile);
+                    const buyerStateCode = transactionType === 'purchase'
+                        ? this.resolveStateCode(profile)
+                        : this.resolveStateCode(customer);
+
+                    if (!sellerStateCode || !buyerStateCode) return false;
+
+                    return sellerStateCode !== buyerStateCode;
                 },
                 onProfileChange() {
                     // Could reload customers for selected profile

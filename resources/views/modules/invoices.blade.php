@@ -111,7 +111,16 @@
                     </div>
                     <div class="grid gap-4 sm:grid-cols-2 text-sm mb-4">
                         <div><span class="text-slate-400">Date:</span> <span x-text="gst.formatDate(viewingInvoice.invoice_date)" class="font-medium"></span></div>
-                        <div><span class="text-slate-400">Status:</span> <span class="badge badge-active uppercase" x-text="viewingInvoice.status"></span></div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-400">Status:</span>
+                            <select x-model="viewingInvoice.status" class="form-select text-sm max-w-[150px]">
+                                <option value="draft">Draft</option>
+                                <option value="issued">Issued</option>
+                                <option value="paid">Paid</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button @click="updateStatus()" class="btn btn-secondary btn-xs">Save</button>
+                        </div>
                         <div><span class="text-slate-400">Seller GSTIN:</span> <span class="font-mono" x-text="viewingInvoice.seller_gstin || '—'"></span></div>
                         <div><span class="text-slate-400">Buyer GSTIN:</span> <span class="font-mono" x-text="viewingInvoice.buyer_gstin || '—'"></span></div>
                         <div><span class="text-slate-400">Supply:</span> <span x-text="viewingInvoice.place_of_supply || '—'"></span></div>
@@ -180,6 +189,22 @@
                         this.invoices = this.invoices.filter(i => (i.id||i._id) !== id);
                         gst.toast('Invoice deleted');
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
+                },
+                async updateStatus() {
+                    if (!this.viewingInvoice) return;
+                    const id = this.viewingInvoice.id || this.viewingInvoice._id;
+                    try {
+                        const res = await gst.api(`/invoices/${id}/status`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: this.viewingInvoice.status }),
+                        });
+                        const idx = this.invoices.findIndex(i => (i.id || i._id) === id);
+                        if (idx >= 0) this.invoices[idx] = res.data;
+                        this.viewingInvoice = res.data;
+                        gst.toast(res.message);
+                    } catch (e) {
+                        gst.toast(e.message || 'Error updating status', 'error');
+                    }
                 },
             };
         }
