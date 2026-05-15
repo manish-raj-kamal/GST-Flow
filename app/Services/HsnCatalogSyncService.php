@@ -268,6 +268,43 @@ class HsnCatalogSyncService
         });
     }
 
+    public function matchHsnByDescription(string $query): array
+    {
+        $cacheKey = 'hsn_match_'.md5($query);
+
+        return Cache::remember($cacheKey, now()->addHours(24), function () use ($query) {
+            return HsnCode::query()
+                ->where('description', 'like', "%{$query}%")
+                ->orWhere('hsn_code', 'like', "{$query}%")
+                ->where('status', 'active')
+                ->limit(10)
+                ->get()
+                ->toArray();
+        });
+    }
+
+    public function auditProductRates(): array
+    {
+        $auditResults = [];
+        $products = Product::all();
+
+        foreach ($products as $product) {
+            $currentRate = $this->resolveCurrentRateForHsn($product->hsn_code);
+
+            if ($currentRate !== null && (float) $product->gst_rate !== (float) $currentRate) {
+                $auditResults[] = [
+                    'product_id' => $product->_id,
+                    'product_name' => $product->product_name,
+                    'hsn_code' => $product->hsn_code,
+                    'stored_rate' => $product->gst_rate,
+                    'current_rate' => $currentRate,
+                ];
+            }
+        }
+
+        return $auditResults;
+    }
+
     private function inferCategoryFromDescription(string $description): string
     {
         $value = Str::lower($description);
