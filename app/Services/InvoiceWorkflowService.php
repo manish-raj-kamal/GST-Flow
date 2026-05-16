@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ProductBusinessProfileMismatchException;
 use App\Models\BusinessProfile;
 use App\Models\Customer;
 use App\Models\Invoice;
@@ -198,7 +199,9 @@ class InvoiceWorkflowService
     {
         return collect($items)->map(function (array $item) use ($businessProfileId): array {
             $product = Product::query()->findOrFail($item['product_id']);
-            abort_if($product->business_profile_id !== $businessProfileId, 422, 'Invoice item product does not belong to the selected business profile.');
+            if ($product->business_profile_id !== $businessProfileId) {
+                throw new ProductBusinessProfileMismatchException($product, $businessProfileId);
+            }
 
             $taxRate = (float) ($product->gst_rate ?? 0);
             $catalogRate = $this->hsnCatalogSyncService->resolveCurrentRateForHsn((string) $product->hsn_code, $product->gst_rate);

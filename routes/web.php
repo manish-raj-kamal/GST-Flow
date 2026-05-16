@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/products', [ApiProductController::class, 'store']);
     Route::put('/products/{product}', [ApiProductController::class, 'update']);
     Route::delete('/products/{product}', [ApiProductController::class, 'destroy']);
+    Route::post('/products/{product}/clone-to-profile', [ApiProductController::class, 'cloneToProfile']);
     Route::get('/hsn-codes', [PageController::class, 'hsnCodes'])->name('hsn-codes');
     Route::get('/tax-slabs', [PageController::class, 'taxSlabs'])->name('tax-slabs');
     Route::get('/invoices', [PageController::class, 'invoices'])->name('invoices');
