@@ -168,6 +168,7 @@
 
     <script>
         function hsnPage() {
+            const codesCacheKey = 'hsn-codes:index';
             return {
                 codes: @json($codes),
                 loadingTable: false,
@@ -354,10 +355,15 @@
                     @endif
                 },
                 async reloadCodes() {
+                    const cached = gst.readCache(codesCacheKey, 300000);
+                    if (Array.isArray(cached) && cached.length > 0) {
+                        this.codes = cached;
+                    }
                     this.loadingTable = true;
                     try {
                         const res = await gst.api('/hsn-codes');
                         this.codes = res.data || [];
+                        gst.writeCache(codesCacheKey, this.codes);
                     } catch (e) {
                         gst.toast(e.message || 'Unable to load HSN codes', 'error');
                     }
@@ -374,6 +380,7 @@
                         const id = this.editing?.id || this.editing?._id;
                         const res = await gst.api(id ? `/hsn-codes/${id}` : '/hsn-codes', { method: id ? 'PUT' : 'POST', body: JSON.stringify(this.form) });
                         if (id) { const idx = this.codes.findIndex(x => (x.id||x._id) === id); if (idx >= 0) this.codes[idx] = res.data; } else { this.codes.push(res.data); }
+                        gst.writeCache(codesCacheKey, this.codes);
                         this.showModal = false;
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
@@ -381,11 +388,12 @@
                 },
                 async remove(c) {
                     if (!confirm('Delete this HSN code?')) return;
-                    try { await gst.api(`/hsn-codes/${c.id || c._id}`, { method: 'DELETE' }); this.codes = this.codes.filter(x => (x.id||x._id) !== (c.id||c._id)); gst.toast('Deleted'); } catch (e) { gst.toast(e.message, 'error'); }
+                    try { await gst.api(`/hsn-codes/${c.id || c._id}`, { method: 'DELETE' }); this.codes = this.codes.filter(x => (x.id||x._id) !== (c.id||c._id)); gst.writeCache(codesCacheKey, this.codes); gst.toast('Deleted'); } catch (e) { gst.toast(e.message, 'error'); }
                 },
                 init() {
                     this.loadRecentSearches();
                     this.loadAnalytics();
+                    this.reloadCodes();
                 },
             };
         }
