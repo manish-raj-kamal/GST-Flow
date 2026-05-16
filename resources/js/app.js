@@ -20,19 +20,20 @@ function initTurboAwareAlpine() {
         setNavigatingState(true);
     });
 
-    document.addEventListener('turbo:before-render', () => {
+    document.addEventListener('turbo:before-cache', () => {
         window.Alpine?.destroyTree?.(document.body);
-        setNavigatingState(true);
     });
 
     document.addEventListener('turbo:render', () => {
-        window.Alpine?.initTree?.(document.body);
         setNavigatingState(false);
     });
 
     document.addEventListener('turbo:load', () => {
-        setNavigatingState(false);
-        warmNavigationLinks();
+        window.requestAnimationFrame(() => {
+            window.Alpine?.initTree?.(document.body);
+            setNavigatingState(false);
+            warmNavigationLinks();
+        });
     });
 }
 
