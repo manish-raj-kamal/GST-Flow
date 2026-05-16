@@ -60,7 +60,9 @@ function prefetchUrl(href) {
 }
 
 function warmNavigationLinks() {
-    const links = Array.from(document.querySelectorAll('[data-nav-prefetch]'));
+    const links = Array.from(document.querySelectorAll(
+        '.nav-item[href], .gst-sidebar-brand[href], .btn[href], [data-nav-prefetch]'
+    ));
 
     links.forEach((link) => {
         if (link.dataset.prefetchBound === 'true') {

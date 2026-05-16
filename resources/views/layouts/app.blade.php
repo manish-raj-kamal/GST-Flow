@@ -92,7 +92,7 @@
                         <div x-show="open" @click.outside="open = false" x-transition
                             class="absolute right-0 mt-2 w-52 rounded-[24px] border bg-white/85 p-2 shadow-[var(--shadow-card)] backdrop-blur-xl" style="border-color: rgba(255,255,255,0.72);">
                             <a href="{{ route('profile.edit') }}" class="block rounded-[16px] px-4 py-2 text-sm font-bold text-[#332F3A] hover:bg-[#EFEBF5]">Profile Settings</a>
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}" data-turbo="false">
                                 @csrf
                                 <button type="submit" class="block w-full rounded-[16px] px-4 py-2 text-left text-sm font-bold text-[#332F3A] hover:bg-[#EFEBF5]">Log Out</button>
                             </form>
@@ -102,7 +102,7 @@
             </header>
 
             {{-- Page Content --}}
-            <main>
+            <main id="app-main">
                 {{ $slot }}
             </main>
         </div>
