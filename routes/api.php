@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\GstRuleController;
 use App\Http\Controllers\Api\GstrSummaryController;
 use App\Http\Controllers\Api\HsnCodeController;
+use App\Http\Controllers\Api\HsnSearchController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\GstNotificationController;
 use App\Http\Controllers\Api\ProductController;
@@ -40,6 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('hsn-codes/catalog', [HsnCodeController::class, 'catalog']);
     Route::post('hsn-codes/sync', [HsnCodeController::class, 'sync']);
     Route::apiResource('hsn-codes', HsnCodeController::class);
+    Route::get('hsn/search', [HsnSearchController::class, 'search']);
+    Route::post('hsn/search/select', [HsnSearchController::class, 'select']);
     Route::apiResource('tax-slabs', TaxSlabController::class);
     Route::get('gst-rules', [GstRuleController::class, 'index']);
     Route::post('gst-rules', [GstRuleController::class, 'store']);
@@ -74,5 +77,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/users/{user}/toggle-status', [AdminController::class, 'toggleUserStatus']);
         Route::put('/users/{user}/role', [AdminController::class, 'assignRole']);
         Route::get('/analytics', [AdminController::class, 'analytics']);
+    });
+
+    Route::middleware('role:admin')->prefix('hsn')->group(function () {
+        Route::get('/analytics', [HsnSearchController::class, 'analytics']);
+        Route::post('/import', [HsnSearchController::class, 'import']);
+        Route::get('/products', [HsnSearchController::class, 'products']);
+        Route::post('/products', [HsnSearchController::class, 'storeProduct']);
+        Route::put('/products/{hsnProduct}', [HsnSearchController::class, 'updateProduct']);
+        Route::delete('/products/{hsnProduct}', [HsnSearchController::class, 'destroyProduct']);
     });
 });
