@@ -98,13 +98,18 @@
                             </div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Product Name *</label><input x-model="form.product_name" class="form-input" required></div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Description</label><input x-model="form.description" class="form-input"></div>
-                            <div class="form-group"><label class="form-label">HSN Code * <x-info-tip text="Selecting an HSN can auto-fill category, description, and GST rate when available." /></label>
-                                <select x-model="form.hsn_code" class="form-select" required @change="autoFillHsn()">
-                                    <option value="">Select HSN</option>
+                            <div class="form-group"><label class="form-label">HSN Code <x-info-tip text="Optional. Pick from the list to auto-fill, or choose Others for manual entry." /></label>
+                                <select x-ref="hsnSelect" x-model="form.hsn_code" class="form-select" @change="autoFillHsn()">
+                                    <option value="">Select HSN (optional)</option>
+                                    <option value="__OTHER__">Others / Not listed</option>
                                     @foreach($hsnCodes as $h)
                                     <option value="{{ $h->hsn_code }}" data-rate="{{ $h->gst_rate }}" data-cat="{{ $h->category }}" data-desc="{{ $h->description }}">{{ $h->hsn_code }} — {{ Str::limit($h->description, 40) }}</option>
                                     @endforeach
                                 </select>
+                                <div class="mt-2" x-show="form.hsn_code === '__OTHER__'">
+                                    <label class="form-label text-xs">Enter HSN code (optional)</label>
+                                    <input x-model="form.hsn_code_manual" class="form-input" placeholder="e.g., 04059020">
+                                </div>
                             </div>
                             <div class="form-group"><label class="form-label">Category</label><input x-model="form.category" class="form-input"></div>
                             <div class="form-group"><label class="form-label">Unit</label>
@@ -138,6 +143,7 @@
             const profileId = '{{ $activeProfile?->id ?? '' }}';
             const allProfileIds = @json($profiles->pluck('id')->values());
             const profileOptions = @json($profiles->map(fn($p) => ['id' => (string) $p->id, 'name' => $p->business_name])->values());
+            const allUserProducts = @json($allUserProducts);
             return {
                 products: @json($products),
                 search: '',
