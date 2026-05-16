@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('export')->group(function () {
         Route::get('/invoices/{invoice}/pdf', [ExportController::class, 'invoicePdf']);
         Route::get('/sales.csv', [ExportController::class, 'salesCsv']);
+        Route::get('/purchases.csv', [ExportController::class, 'purchaseCsv']);
         Route::get('/tax-summary.csv', [ExportController::class, 'taxSummaryCsv']);
         Route::get('/monthly-summary.xls', [ExportController::class, 'monthlySummaryXls']);
     });

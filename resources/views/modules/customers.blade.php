@@ -37,7 +37,7 @@
             <div class="overflow-x-auto">
                 <table class="data-table">
                     <thead><tr>
-                        <th>Customer</th><th>GSTIN</th><th>State</th><th>Type</th><th>Supply</th><th>Contact</th><th class="text-right">Actions</th>
+                        <th>Customer</th><th>GSTIN</th><th>State</th><th>Type</th><th>Business Profiles</th><th>Supply</th><th>Contact</th><th class="text-right">Actions</th>
                     </tr></thead>
                     <tbody>
                         <template x-for="c in filtered" :key="c.id || c._id">
@@ -46,6 +46,9 @@
                                 <td class="font-mono text-xs" x-text="c.gstin || '—'"></td>
                                 <td x-text="c.state || '—'"></td>
                                 <td><span class="badge badge-info capitalize" x-text="c.customer_type || 'N/A'"></span></td>
+                                <td>
+                                    <span class="badge badge-info cursor-help" :title="profileTooltip(c)" x-text="profileLabel(c)"></span>
+                                </td>
                                 <td><span class="badge" :class="c.is_interstate ? 'badge-warning' : 'badge-active'" x-text="c.is_interstate ? 'Interstate' : 'Intrastate'"></span></td>
                                 <td class="text-xs text-slate-500" x-text="c.email || c.phone || '—'"></td>
                                 <td class="text-right">
@@ -89,6 +92,17 @@
                                     <option value="government">Government</option>
                                 </select>
                             </div>
+                            <div class="form-group sm:col-span-2">
+                                <label class="form-label">Related Business Profiles *</label>
+                                <div class="grid gap-2 rounded-xl border p-3" style="border-color: hsl(var(--gst-border));">
+                                    <template x-for="profile in availableProfiles" :key="profile.id || profile._id">
+                                        <label class="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
+                                            <input type="checkbox" :value="profile.id || profile._id" x-model="form.business_profile_ids" class="rounded border-slate-300 text-violet-600 focus:ring-violet-500">
+                                            <span x-text="profile.business_name"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                         <div class="flex justify-end gap-3 pt-2">
                             <button type="button" @click="showModal = false" class="btn btn-secondary">Cancel</button>
@@ -106,8 +120,10 @@
     <script>
         function customersPage() {
             const profileId = '{{ $activeProfile?->id ?? '' }}';
+            const profiles = @json($profiles);
             return {
                 customers: @json($customers),
+                availableProfiles: profiles,
                 search: '',
                 showModal: false,
                 editing: null,
@@ -121,15 +137,32 @@
                 },
                 openModal(c = null) {
                     this.editing = c;
-                    this.form = c ? { ...c } : { customer_name: '', gstin: '', state: '', address: '', phone: '', email: '', customer_type: 'business', business_profile_id: profileId };
-                    if (!c) this.form.business_profile_id = profileId;
+                    this.form = c
+                        ? { ...c, business_profile_ids: [...(c.business_profile_ids || [])], business_profile_id: c.business_profile_id || c.business_profile_ids?.[0] || profileId }
+                        : { customer_name: '', gstin: '', state: '', address: '', phone: '', email: '', customer_type: 'business', business_profile_id: profileId, business_profile_ids: profileId ? [profileId] : [] };
                     this.showModal = true;
+                },
+                profileLabel(c) {
+                    const count = c.business_profiles?.length || c.business_profile_ids?.length || 0;
+                    if (!count) return '—';
+                    if (count === 1) return c.business_profiles?.[0]?.business_name || '1 profile';
+                    return `${count} profiles`;
+                },
+                profileTooltip(c) {
+                    const names = (c.business_profiles || []).map(profile => profile.business_name).filter(Boolean);
+                    return names.length ? names.join(', ') : 'No related business profiles';
                 },
                 async save() {
                     this.saving = true;
                     try {
                         const id = this.editing?.id || this.editing?._id;
-                        this.form.business_profile_id = this.form.business_profile_id || profileId;
+                        this.form.business_profile_ids = [...new Set((this.form.business_profile_ids || []).filter(Boolean))];
+                        if (!this.form.business_profile_ids.length) {
+                            gst.toast('Select at least one related business profile', 'error');
+                            this.saving = false;
+                            return;
+                        }
+                        this.form.business_profile_id = this.form.business_profile_ids[0];
                         const url = id ? `/customers/${id}` : '/customers';
                         const method = id ? 'PUT' : 'POST';
                         const res = await gst.api(url, { method, body: JSON.stringify(this.form) });

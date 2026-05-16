@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/monthly-gst-summary', [ApiReportController::class, 'monthlyGstSummary']);
     Route::get('/export/invoices/{invoice}/pdf', [ApiExportController::class, 'invoicePdf']);
     Route::get('/export/sales.csv', [ApiExportController::class, 'salesCsv']);
+    Route::get('/export/purchases.csv', [ApiExportController::class, 'purchaseCsv']);
     Route::get('/export/tax-summary.csv', [ApiExportController::class, 'taxSummaryCsv']);
     Route::get('/export/monthly-summary.xls', [ApiExportController::class, 'monthlySummaryXls']);
     Route::get('/gstr-summary', [PageController::class, 'gstrSummary'])->name('gstr-summary');
