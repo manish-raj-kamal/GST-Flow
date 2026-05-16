@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\CustomerController as ApiCustomerController;
+use App\Http\Controllers\Api\ProductController as ApiProductController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/customers/{customer}', [ApiCustomerController::class, 'update']);
     Route::delete('/customers/{customer}', [ApiCustomerController::class, 'destroy']);
     Route::get('/products', [PageController::class, 'products'])->name('products');
+    Route::post('/products', [ApiProductController::class, 'store']);
+    Route::put('/products/{product}', [ApiProductController::class, 'update']);
+    Route::delete('/products/{product}', [ApiProductController::class, 'destroy']);
     Route::get('/hsn-codes', [PageController::class, 'hsnCodes'])->name('hsn-codes');
     Route::get('/tax-slabs', [PageController::class, 'taxSlabs'])->name('tax-slabs');
     Route::get('/invoices', [PageController::class, 'invoices'])->name('invoices');
