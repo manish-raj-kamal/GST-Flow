@@ -10,12 +10,17 @@
         </div>
     </x-slot>
 
-    <div class="p-4 sm:p-6 lg:p-8" x-data="{ search: '', logs: @js($logs) }">
+    <div class="p-4 sm:p-6 lg:p-8" x-data="activityLogsPage()">
         <div class="mb-6">
             <div class="search-bar max-w-sm">
                 <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <input type="text" x-model="search" placeholder="Filter logs..." class="flex-1">
             </div>
+        </div>
+
+        <div x-show="loading" class="mb-6 text-center py-6 text-slate-400">
+            <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
+            <p class="mt-2 text-sm">Loading activity logs...</p>
         </div>
 
         <div class="card-lg">
@@ -40,7 +45,7 @@
                 </template>
             </div>
 
-            <template x-if="logs.length === 0">
+            <template x-if="!loading && logs.length === 0">
                 <div class="empty-state py-12">
                     <div class="empty-icon"><svg class="h-7 w-7 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
                     <h3>No activity yet</h3>
@@ -49,4 +54,27 @@
             </template>
         </div>
     </div>
+
+    <script>
+        function activityLogsPage() {
+            return {
+                search: '',
+                logs: @js($logs),
+                loading: false,
+                async loadLogs() {
+                    this.loading = true;
+                    try {
+                        const res = await gst.api('/activity-logs');
+                        this.logs = res?.data || [];
+                    } catch (e) {
+                        gst.toast(e.message || 'Unable to load activity logs', 'error');
+                    }
+                    this.loading = false;
+                },
+                init() {
+                    this.loadLogs();
+                },
+            };
+        }
+    </script>
 </x-app-layout>

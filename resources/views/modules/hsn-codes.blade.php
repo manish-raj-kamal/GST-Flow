@@ -136,6 +136,11 @@
         </div>
         @endif
 
+        <div x-show="loadingTable" class="mb-6 text-center py-6 text-slate-400">
+            <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
+            <p class="mt-2 text-sm">Loading HSN codes...</p>
+        </div>
+
         <div class="card-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="data-table">
@@ -161,7 +166,7 @@
                     </tbody>
                 </table>
             </div>
-            <template x-if="tableRows.length === 0">
+            <template x-if="!loadingTable && tableRows.length === 0">
                 <div class="empty-state py-12"><h3>No HSN codes found</h3><p>HSN codes define the GST classification for goods and services.</p></div>
             </template>
         </div>
@@ -197,6 +202,7 @@
         function hsnPage() {
             return {
                 codes: @json($codes),
+                loadingTable: false,
                 search: '',
                 smartResults: [],
                 smartOpen: false,
@@ -380,10 +386,14 @@
                     @endif
                 },
                 async reloadCodes() {
+                    this.loadingTable = true;
                     try {
                         const res = await gst.api('/hsn-codes');
                         this.codes = res.data || [];
-                    } catch (e) {}
+                    } catch (e) {
+                        gst.toast(e.message || 'Unable to load HSN codes', 'error');
+                    }
+                    this.loadingTable = false;
                 },
                 openModal(c = null) {
                     this.editing = c;
