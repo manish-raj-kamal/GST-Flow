@@ -41,7 +41,7 @@
                         <template x-for="p in filtered" :key="p.id || p._id">
                             <tr>
                                 <td><div class="font-medium text-slate-900" x-text="p.product_name"></div><div class="text-xs text-slate-400 truncate max-w-[200px]" x-text="p.description"></div></td>
-                                <td class="font-mono text-xs" x-text="p.hsn_code"></td>
+                                <td class="font-mono text-xs" x-text="p.hsn_code || '—'"></td>
                                 <td x-text="p.category || '—'"></td>
                                 <td x-text="p.unit || '—'"></td>
                                 <td class="font-medium" x-text="'₹ ' + gst.formatNumber(p.price)"></td>
@@ -74,30 +74,28 @@
                     </div>
                     <form @submit.prevent="save()" class="space-y-4">
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <template x-if="!editing">
-                                <div class="form-group sm:col-span-2">
-                                    <label class="form-label">Add product to *</label>
-                                    <div class="relative">
-                                        <button type="button" class="form-select w-full text-left" @click="profileDropdownOpen = !profileDropdownOpen">
-                                            <span class="block truncate" x-text="selectedProfilesLabel()"></span>
+                            <div class="form-group sm:col-span-2">
+                                <label class="form-label" x-text="editing ? 'Available in *' : 'Add product to *'"></label>
+                                <div class="relative">
+                                    <button type="button" class="form-select w-full text-left" @click="profileDropdownOpen = !profileDropdownOpen">
+                                        <span class="block truncate" x-text="selectedProfilesLabel()"></span>
+                                    </button>
+                                    <div x-show="profileDropdownOpen" x-transition @click.outside="profileDropdownOpen = false" class="absolute z-30 mt-2 w-full rounded-xl border bg-white p-2 shadow-lg" style="border-color: hsl(var(--gst-border));">
+                                        <button type="button" class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold hover:bg-slate-50" @click="toggleAllProfiles()">
+                                            <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" :checked="isAllProfilesSelected()">
+                                            <span>All Profiles</span>
                                         </button>
-                                        <div x-show="profileDropdownOpen" x-transition @click.outside="profileDropdownOpen = false" class="absolute z-30 mt-2 w-full rounded-xl border bg-white p-2 shadow-lg" style="border-color: hsl(var(--gst-border));">
-                                            <button type="button" class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold hover:bg-slate-50" @click="toggleAllProfiles()">
-                                                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" :checked="isAllProfilesSelected()">
-                                                <span>All Profiles</span>
+                                        <div class="my-1 h-px bg-slate-100"></div>
+                                        <template x-for="profile in profileOptions" :key="profile.id">
+                                            <button type="button" class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-slate-50" @click="toggleProfile(profile.id)">
+                                                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" :checked="isProfileSelected(profile.id)">
+                                                <span class="truncate" x-text="profile.name"></span>
                                             </button>
-                                            <div class="my-1 h-px bg-slate-100"></div>
-                                            <template x-for="profile in profileOptions" :key="profile.id">
-                                                <button type="button" class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-slate-50" @click="toggleProfile(profile.id)">
-                                                    <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" :checked="isProfileSelected(profile.id)">
-                                                    <span class="truncate" x-text="profile.name"></span>
-                                                </button>
-                                            </template>
-                                        </div>
+                                        </template>
                                     </div>
-                                    <p class="mt-1 text-xs text-slate-500">Default is all business profiles.</p>
                                 </div>
-                            </template>
+                                <p class="mt-1 text-xs text-slate-500" x-show="!editing">Default is all business profiles.</p>
+                            </div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Product Name *</label><input x-model="form.product_name" class="form-input" required></div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Description</label><input x-model="form.description" class="form-input"></div>
                             <div class="form-group"><label class="form-label">HSN Code * <x-info-tip text="Selecting an HSN can auto-fill category, description, and GST rate when available." /></label>
