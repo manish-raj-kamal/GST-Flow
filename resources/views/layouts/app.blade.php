@@ -139,6 +139,32 @@
                 async webApi(url, options = {}) {
                     return this.request(url, options);
                 },
+                readCache(key, maxAgeMs = 120000) {
+                    try {
+                        const raw = sessionStorage.getItem(`gst-cache:${key}`);
+                        if (!raw) return null;
+                        const payload = JSON.parse(raw);
+                        if (!payload || typeof payload !== 'object') return null;
+                        if (typeof payload.saved_at !== 'number') return null;
+                        if (Date.now() - payload.saved_at > maxAgeMs) return null;
+                        return payload.data;
+                    } catch (e) {
+                        return null;
+                    }
+                },
+                writeCache(key, data) {
+                    try {
+                        sessionStorage.setItem(`gst-cache:${key}`, JSON.stringify({
+                            saved_at: Date.now(),
+                            data,
+                        }));
+                    } catch (e) {}
+                },
+                clearCache(key) {
+                    try {
+                        sessionStorage.removeItem(`gst-cache:${key}`);
+                    } catch (e) {}
+                },
                 toast(message, type = 'success') {
                     const container = document.getElementById('toast-container');
                     const el = document.createElement('div');

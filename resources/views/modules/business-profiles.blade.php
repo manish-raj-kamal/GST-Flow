@@ -112,6 +112,7 @@
 
     <script>
         function businessProfilesPage() {
+            const cacheKey = 'business-profiles:index';
             return {
                 profiles: @json($profiles),
                 loading: false,
@@ -131,10 +132,15 @@
                     return gst.formatDate(value);
                 },
                 async loadProfiles() {
+                    const cached = gst.readCache(cacheKey, 300000);
+                    if (Array.isArray(cached) && cached.length > 0) {
+                        this.profiles = cached;
+                    }
                     this.loading = true;
                     try {
                         const res = await gst.api('/business-profiles');
                         this.profiles = res?.data || [];
+                        gst.writeCache(cacheKey, this.profiles);
                     } catch (e) {
                         gst.toast(e.message || 'Unable to load business profiles', 'error');
                     }
@@ -160,6 +166,7 @@
                         } else {
                             this.profiles.push(res.data);
                         }
+                        gst.writeCache(cacheKey, this.profiles);
                         this.showModal = false;
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
@@ -171,6 +178,7 @@
                     try {
                         const res = await gst.webApi(`/business-profiles/${id}`, { method: 'DELETE' });
                         this.profiles = this.profiles.filter(p => (p.id||p._id) !== id);
+                        gst.writeCache(cacheKey, this.profiles);
                         this.showModal = false;
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
