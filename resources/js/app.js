@@ -20,20 +20,13 @@ function initTurboAwareAlpine() {
         setNavigatingState(true);
     });
 
-    document.addEventListener('turbo:before-cache', () => {
-        window.Alpine?.destroyTree?.(document.body);
-    });
-
     document.addEventListener('turbo:render', () => {
         setNavigatingState(false);
     });
 
     document.addEventListener('turbo:load', () => {
-        window.requestAnimationFrame(() => {
-            window.Alpine?.initTree?.(document.body);
-            setNavigatingState(false);
-            warmNavigationLinks();
-        });
+        setNavigatingState(false);
+        warmNavigationLinks();
     });
 }
 
