@@ -185,7 +185,8 @@
                     this.form.business_profile_ids = this.isAllProfilesSelected() ? [] : [...allProfileIds];
                 },
                 autoFillHsn() {
-                    const opt = document.querySelector(`select option[value="${this.form.hsn_code}"]`);
+                    if (!this.form.hsn_code || this.form.hsn_code === '__OTHER__') return;
+                    const opt = this.$refs.hsnSelect?.querySelector(`option[value="${this.form.hsn_code}"]`);
                     if (opt) {
                         this.form.gst_rate = opt.dataset.rate || this.form.gst_rate;
                         if (!this.form.category) this.form.category = opt.dataset.cat || '';
@@ -194,9 +195,19 @@
                 },
                 openModal(p = null) {
                     this.editing = p;
-                    this.form = p
-                        ? { ...p, business_profile_ids: [p.business_profile_id || profileId].filter(Boolean) }
-                        : { product_name: '', description: '', hsn_code: '', category: '', unit: 'NOS', price: '', gst_rate: '18', status: 'active', business_profile_id: profileId, business_profile_ids: [...allProfileIds] };
+                    if (p) {
+                        let selected = [p.business_profile_id || profileId].filter(Boolean);
+                        if (p.product_key) {
+                            const byKey = (allUserProducts || [])
+                                .filter(x => x.product_key && x.product_key === p.product_key)
+                                .map(x => x.business_profile_id)
+                                .filter(Boolean);
+                            if (byKey.length) selected = [...new Set(byKey)];
+                        }
+                        this.form = { ...p, business_profile_ids: selected, hsn_code: p.hsn_code || '', hsn_code_manual: '' };
+                    } else {
+                        this.form = { product_name: '', description: '', hsn_code: '', hsn_code_manual: '', category: '', unit: 'NOS', price: '', gst_rate: '18', status: 'active', business_profile_id: profileId, business_profile_ids: [...allProfileIds] };
+                    }
                     this.profileDropdownOpen = false;
                     this.showModal = true;
                 },
@@ -204,18 +215,30 @@
                     this.saving = true;
                     try {
                         const id = this.editing?.id || this.editing?._id;
+
+                        this.form.business_profile_ids = (this.form.business_profile_ids || []).filter(Boolean);
+                        if (this.form.business_profile_ids.length === 0) {
+                            this.form.business_profile_ids = id
+                                ? [this.form.business_profile_id || profileId].filter(Boolean)
+                                : [...allProfileIds];
+                        }
+
+                        if (this.form.hsn_code === '__OTHER__') {
+                            this.form.hsn_code = (this.form.hsn_code_manual || '').trim();
+                        }
+
                         if (!id) {
-                            this.form.business_profile_ids = (this.form.business_profile_ids || []).filter(Boolean);
-                            if (this.form.business_profile_ids.length === 0) this.form.business_profile_ids = [...allProfileIds];
                             this.form.business_profile_id = this.form.business_profile_id || this.form.business_profile_ids[0] || profileId;
                         } else {
                             this.form.business_profile_id = this.form.business_profile_id || profileId;
                         }
+
                         const url = id ? `/products/${id}` : '/products';
                         const method = id ? 'PUT' : 'POST';
                         const res = await gst.api(url, { method, body: JSON.stringify(this.form) });
+
                         if (id) {
-                            const idx = this.products.findIndex(x => (x.id||x._id) === id);
+                            const idx = this.products.findIndex(x => (x.id || x._id) === id);
                             if (idx >= 0) this.products[idx] = res.data;
                         } else {
                             const created = Array.isArray(res.created_products) ? res.created_products : (res.data ? [res.data] : []);
@@ -225,9 +248,12 @@
                                 this.products.push(...created);
                             }
                         }
+
                         this.showModal = false;
                         gst.toast(res.message);
-                    } catch (e) { gst.toast(e.message || 'Error', 'error'); }
+                    } catch (e) {
+                        gst.toast(e.message || 'Error', 'error');
+                    }
                     this.saving = false;
                 },
                 async remove(p) {
