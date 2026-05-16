@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\ProductBusinessProfileMismatchException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Models\BusinessProfile;
@@ -60,7 +61,25 @@ class InvoiceController extends Controller
     {
         $businessProfile = BusinessProfile::query()->findOrFail($request->validated('business_profile_id'));
         $this->authorizeBusinessProfile($request, $businessProfile);
-        $invoice = $invoiceWorkflowService->create($request->validated(), $request->user(), $request);
+
+        try {
+            $invoice = $invoiceWorkflowService->create($request->validated(), $request->user(), $request);
+        } catch (ProductBusinessProfileMismatchException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'code' => 'PRODUCT_PROFILE_MISMATCH',
+                'data' => [
+                    'product_id' => $e->product->id,
+                    'product_name' => $e->product->product_name,
+                    'product_business_profile_id' => $e->product->business_profile_id,
+                    'target_business_profile_id' => $e->targetBusinessProfileId,
+                    'clone_url' => sprintf('/products/%s/clone-to-profile', $e->product->id),
+                    'clone_payload' => [
+                        'target_business_profile_id' => $e->targetBusinessProfileId,
+                    ],
+                ],
+            ], 422);
+        }
 
         return response()->json(['message' => 'Invoice created successfully.', 'data' => $invoice], 201);
     }
@@ -80,7 +99,25 @@ class InvoiceController extends Controller
     {
         $businessProfile = BusinessProfile::query()->findOrFail($invoice->business_profile_id);
         $this->authorizeBusinessProfile($request, $businessProfile);
-        $updatedInvoice = $invoiceWorkflowService->update($invoice, $request->validated(), $request->user(), $request);
+
+        try {
+            $updatedInvoice = $invoiceWorkflowService->update($invoice, $request->validated(), $request->user(), $request);
+        } catch (ProductBusinessProfileMismatchException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'code' => 'PRODUCT_PROFILE_MISMATCH',
+                'data' => [
+                    'product_id' => $e->product->id,
+                    'product_name' => $e->product->product_name,
+                    'product_business_profile_id' => $e->product->business_profile_id,
+                    'target_business_profile_id' => $e->targetBusinessProfileId,
+                    'clone_url' => sprintf('/products/%s/clone-to-profile', $e->product->id),
+                    'clone_payload' => [
+                        'target_business_profile_id' => $e->targetBusinessProfileId,
+                    ],
+                ],
+            ], 422);
+        }
 
         return response()->json(['message' => 'Invoice updated successfully.', 'data' => $updatedInvoice]);
     }
