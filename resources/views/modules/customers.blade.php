@@ -32,6 +32,11 @@
             </button>
         </div>
 
+        <div x-show="loading" class="mb-6 text-center py-6 text-slate-400">
+            <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
+            <p class="mt-2 text-sm">Loading customers...</p>
+        </div>
+
         {{-- Table --}}
         <div class="card-lg overflow-hidden">
             <div class="overflow-x-auto">
@@ -60,7 +65,7 @@
                     </tbody>
                 </table>
             </div>
-            <template x-if="filtered.length === 0">
+            <template x-if="!loading && filtered.length === 0">
                 <div class="empty-state py-12">
                     <div class="empty-icon"><svg class="h-7 w-7 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
                     <h3>No customers yet</h3>
@@ -124,6 +129,7 @@
             return {
                 customers: @json($customers),
                 availableProfiles: profiles,
+                loading: false,
                 search: '',
                 showModal: false,
                 editing: null,
@@ -151,6 +157,22 @@
                 profileTooltip(c) {
                     const names = (c.business_profiles || []).map(profile => profile.business_name).filter(Boolean);
                     return names.length ? names.join(', ') : 'No related business profiles';
+                },
+                async loadCustomers() {
+                    if (!profileId) {
+                        this.customers = [];
+                        this.loading = false;
+                        return;
+                    }
+
+                    this.loading = true;
+                    try {
+                        const res = await gst.api(`/customers?business_profile_id=${profileId}`);
+                        this.customers = res?.data || [];
+                    } catch (e) {
+                        gst.toast(e.message || 'Unable to load customers', 'error');
+                    }
+                    this.loading = false;
                 },
                 async save() {
                     this.saving = true;
@@ -185,6 +207,9 @@
                         this.customers = this.customers.filter(p => (p.id||p._id) !== id);
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
+                },
+                init() {
+                    this.loadCustomers();
                 },
             };
         }
