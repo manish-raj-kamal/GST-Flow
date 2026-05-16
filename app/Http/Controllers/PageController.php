@@ -82,15 +82,81 @@ class PageController extends Controller
         })->values();
     }
 
+    private function presentBusinessProfiles(Collection $profiles): Collection
+    {
+        return $profiles->map(fn (BusinessProfile $profile): array => [
+            'id' => (string) $profile->id,
+            'business_name' => $profile->business_name,
+            'legal_name' => $profile->legal_name,
+            'gstin' => $profile->gstin,
+            'pan' => $profile->pan,
+            'address' => $profile->address,
+            'city' => $profile->city,
+            'state' => $profile->state,
+            'state_code' => $profile->state_code,
+            'pincode' => $profile->pincode,
+            'email' => $profile->email,
+            'phone' => $profile->phone,
+            'business_type' => $profile->business_type,
+            'registration_date' => optional($profile->registration_date)->toDateString(),
+        ])->values();
+    }
+
+    private function presentProducts(Collection $products, Collection $profiles, Collection $allUserProducts): Collection
+    {
+        $groupedProducts = $allUserProducts
+            ->groupBy(fn (array $product): string => (string) ($product['product_key'] ?: $product['id']));
+
+        return $products->map(function (Product $product) use ($profiles, $groupedProducts): array {
+            $groupKey = (string) ($product->product_key ?: $product->id);
+            $relatedProfileIds = collect($groupedProducts->get($groupKey, collect([
+                ['business_profile_id' => (string) $product->business_profile_id],
+            ])))
+                ->pluck('business_profile_id')
+                ->filter()
+                ->map(fn ($id) => (string) $id)
+                ->unique()
+                ->values()
+                ->all();
+
+            $relatedProfiles = $profiles
+                ->filter(fn (BusinessProfile $profile): bool => in_array((string) $profile->id, $relatedProfileIds, true))
+                ->map(fn (BusinessProfile $profile): array => [
+                    'id' => (string) $profile->id,
+                    'business_name' => $profile->business_name,
+                ])
+                ->values()
+                ->all();
+
+            return [
+                'id' => (string) $product->id,
+                'business_profile_id' => (string) $product->business_profile_id,
+                'business_profile_ids' => $relatedProfileIds,
+                'business_profiles' => $relatedProfiles,
+                'product_key' => $product->product_key ? (string) $product->product_key : null,
+                'product_name' => $product->product_name,
+                'description' => $product->description,
+                'category' => $product->category,
+                'hsn_code' => $product->hsn_code,
+                'unit' => $product->unit,
+                'price' => (float) $product->price,
+                'gst_rate' => (float) $product->gst_rate,
+                'status' => $product->status,
+            ];
+        })->values();
+    }
+
     public function businessProfiles(Request $request): View
     {
         try {
             $profiles = $this->getUserProfiles($request);
+            $presentedProfiles = $this->presentBusinessProfiles($profiles);
         } catch (Throwable) {
             $profiles = collect();
+            $presentedProfiles = collect();
         }
         return view('modules.business-profiles', [
-            'profiles' => $profiles,
+            'profiles' => $presentedProfiles,
             'pageTitle' => 'Business Profiles',
         ]);
     }
@@ -118,7 +184,7 @@ class PageController extends Controller
     {
         try {
             $profile = $this->resolveProfile($request);
-            $products = $profile
+            $rawProducts = $profile
                 ? Product::query()->where('business_profile_id', $profile->id)->get()
                 : collect();
             $profiles = $this->getUserProfiles($request);
@@ -133,6 +199,7 @@ class PageController extends Controller
                     ])
                     ->values()
                 : collect();
+            $products = $this->presentProducts($rawProducts, $profiles, $allUserProducts);
             $hsnCodes = HsnCode::query()->where('status', 'active')->get();
             $taxSlabs = TaxSlab::query()->where('status', 'active')->get();
         } catch (Throwable) {

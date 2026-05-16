@@ -35,7 +35,7 @@
             <div class="overflow-x-auto">
                 <table class="data-table">
                     <thead><tr>
-                        <th>Product</th><th>HSN</th><th>Category</th><th>Unit</th><th>Price</th><th>GST Rate</th><th>Status</th><th class="text-right">Actions</th>
+                        <th>Product</th><th>HSN</th><th>Category</th><th>Business Profiles</th><th>Unit</th><th>Price</th><th>GST Rate</th><th>Status</th><th class="text-right">Actions</th>
                     </tr></thead>
                     <tbody>
                         <template x-for="p in filtered" :key="p.id || p._id">
@@ -43,6 +43,7 @@
                                 <td><div class="font-medium text-slate-900" x-text="p.product_name"></div><div class="text-xs text-slate-400 truncate max-w-[200px]" x-text="p.description"></div></td>
                                 <td class="font-mono text-xs" x-text="p.hsn_code || '—'"></td>
                                 <td x-text="p.category || '—'"></td>
+                                <td><span class="badge badge-info cursor-help" :title="profileTooltip(p)" x-text="profileLabel(p)"></span></td>
                                 <td x-text="p.unit || '—'"></td>
                                 <td class="font-medium" x-text="'₹ ' + gst.formatNumber(p.price)"></td>
                                 <td><span class="badge badge-info" x-text="p.gst_rate + '%'"></span></td>
@@ -158,6 +159,16 @@
                     return this.products.filter(p =>
                         !q || (p.product_name||'').toLowerCase().includes(q) || (p.hsn_code||'').toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q)
                     );
+                },
+                profileLabel(product) {
+                    const count = product.business_profiles?.length || product.business_profile_ids?.length || 0;
+                    if (!count) return '—';
+                    if (count === 1) return product.business_profiles?.[0]?.business_name || '1 profile';
+                    return `${count} profiles`;
+                },
+                profileTooltip(product) {
+                    const names = (product.business_profiles || []).map(profile => profile.business_name).filter(Boolean);
+                    return names.length ? names.join(', ') : 'No related business profiles';
                 },
                 selectedProfilesLabel() {
                     const selected = this.profileOptions.filter(p => this.isProfileSelected(p.id));

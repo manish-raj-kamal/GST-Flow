@@ -39,6 +39,7 @@
                         <div class="flex justify-between"><span class="text-slate-400">PAN</span><span class="font-medium" x-text="profile.pan || '—'"></span></div>
                         <div class="flex justify-between"><span class="text-slate-400">State</span><span x-text="profile.state || '—'"></span></div>
                         <div class="flex justify-between"><span class="text-slate-400">Type</span><span class="capitalize" x-text="profile.business_type || '—'"></span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Registered</span><span x-text="formatRegistrationDate(profile.registration_date)"></span></div>
                     </div>
                     <div class="mt-4 flex items-center gap-2 border-t pt-3" style="border-color: hsl(var(--gst-border))">
                         <span class="text-xs text-slate-400" x-text="profile.email"></span>
@@ -119,9 +120,15 @@
                         !q || (p.business_name||'').toLowerCase().includes(q) || (p.gstin||'').toLowerCase().includes(q)
                     );
                 },
+                formatRegistrationDate(value) {
+                    if (!value) return '—';
+                    return gst.formatDate(value);
+                },
                 openModal(profile = null) {
                     this.editing = profile;
-                    this.form = profile ? { ...profile } : { business_name: '', legal_name: '', gstin: '', address: '', city: '', pincode: '', email: '', phone: '', business_type: '', registration_date: '' };
+                    this.form = profile
+                        ? { ...profile, registration_date: profile.registration_date || '' }
+                        : { business_name: '', legal_name: '', gstin: '', address: '', city: '', pincode: '', email: '', phone: '', business_type: '', registration_date: '' };
                     this.showModal = true;
                 },
                 async save() {

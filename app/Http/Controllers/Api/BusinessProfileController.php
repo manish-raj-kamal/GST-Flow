@@ -32,7 +32,7 @@ class BusinessProfileController extends Controller
                 || str_contains(strtolower($profile->gstin), strtolower((string) $request->query('search'))))
             ->values();
 
-        return response()->json(['data' => $profiles]);
+        return response()->json(['data' => $profiles->map(fn (BusinessProfile $profile): array => $this->presentBusinessProfile($profile))->values()]);
     }
 
     public function store(StoreBusinessProfileRequest $request): JsonResponse
@@ -69,7 +69,7 @@ class BusinessProfileController extends Controller
             'gstin' => $profile->gstin,
         ], $request);
 
-        return response()->json(['message' => 'Business profile created successfully.', 'data' => $profile], 201);
+        return response()->json(['message' => 'Business profile created successfully.', 'data' => $this->presentBusinessProfile($profile)], 201);
     }
 
     public function show(Request $request, BusinessProfile $businessProfile): JsonResponse
@@ -77,7 +77,7 @@ class BusinessProfileController extends Controller
         $this->authorizeBusinessProfile($request, $businessProfile);
 
         return response()->json([
-            'data' => $businessProfile,
+            'data' => $this->presentBusinessProfile($businessProfile),
             'stats' => [
                 'customers' => Customer::query()
                     ->get()
@@ -127,7 +127,7 @@ class BusinessProfileController extends Controller
             'business_profile_id' => $businessProfile->id,
         ], $request);
 
-        return response()->json(['message' => 'Business profile updated successfully.', 'data' => $businessProfile->fresh()]);
+        return response()->json(['message' => 'Business profile updated successfully.', 'data' => $this->presentBusinessProfile($businessProfile->fresh())]);
     }
 
     public function destroy(Request $request, BusinessProfile $businessProfile): JsonResponse
@@ -184,5 +184,26 @@ class BusinessProfileController extends Controller
     private function authorizeBusinessProfile(Request $request, BusinessProfile $businessProfile): void
     {
         abort_if(! $request->user()->isAdmin() && $businessProfile->user_id !== $request->user()->id, 403, 'Forbidden');
+    }
+
+    private function presentBusinessProfile(BusinessProfile $profile): array
+    {
+        return [
+            'id' => (string) $profile->id,
+            'user_id' => (string) $profile->user_id,
+            'business_name' => $profile->business_name,
+            'legal_name' => $profile->legal_name,
+            'gstin' => $profile->gstin,
+            'pan' => $profile->pan,
+            'address' => $profile->address,
+            'city' => $profile->city,
+            'state' => $profile->state,
+            'state_code' => $profile->state_code,
+            'pincode' => $profile->pincode,
+            'email' => $profile->email,
+            'phone' => $profile->phone,
+            'business_type' => $profile->business_type,
+            'registration_date' => optional($profile->registration_date)->toDateString(),
+        ];
     }
 }

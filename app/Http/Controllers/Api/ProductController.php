@@ -11,6 +11,7 @@ use App\Services\ActivityLogService;
 use App\Services\HsnCatalogSyncService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -24,6 +25,8 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         $profile = $this->resolveBusinessProfile($request);
+        $profiles = $this->userProfiles($request);
+        $allUserProducts = $this->allUserProducts($profiles);
 
         $products = Product::query()
             ->where('business_profile_id', $profile->id)
@@ -33,6 +36,7 @@ class ProductController extends Controller
                 || str_contains(strtolower((string) $product->hsn_code), strtolower((string) $request->query('search'))))
             ->filter(fn (Product $product) => blank($request->query('category')) || $product->category === $request->query('category'))
             ->filter(fn (Product $product) => blank($request->query('status')) || $product->status === $request->query('status'))
+            ->map(fn (Product $product): array => $this->presentProduct($product, $profiles, $allUserProducts))
             ->values();
 
         return response()->json(['data' => $products]);
@@ -84,12 +88,15 @@ class ProductController extends Controller
             })
             ->values();
 
+        $profiles = $this->userProfiles($request);
+        $allUserProducts = $this->allUserProducts($profiles);
+
         return response()->json([
             'message' => $createdProducts->count() > 1
                 ? sprintf('Product created for %d business profiles.', $createdProducts->count())
                 : 'Product created successfully.',
-            'data' => $createdProducts->first(),
-            'created_products' => $createdProducts,
+            'data' => $this->presentProduct($createdProducts->first(), $profiles, $allUserProducts),
+            'created_products' => $createdProducts->map(fn (Product $product): array => $this->presentProduct($product, $profiles, $allUserProducts))->values(),
         ], 201);
     }
 
@@ -97,7 +104,9 @@ class ProductController extends Controller
     {
         $this->findAccessibleBusinessProfile($product->business_profile_id, $request);
 
-        return response()->json(['data' => $product]);
+        return response()->json([
+            'data' => $this->presentProduct($product, $this->userProfiles($request), $this->allUserProducts($this->userProfiles($request))),
+        ]);
     }
 
     public function update(StoreProductRequest $request, Product $product): JsonResponse
@@ -174,13 +183,15 @@ class ProductController extends Controller
         ], $request);
 
         $current = Product::query()->findOrFail($product->id);
+        $profiles = $this->userProfiles($request);
+        $allUserProducts = $this->allUserProducts($profiles);
 
         return response()->json([
             'message' => $syncedProducts->count() > 1
                 ? sprintf('Product updated and synced to %d profiles.', $syncedProducts->count())
                 : 'Product updated successfully.',
-            'data' => $current,
-            'synced_products' => $syncedProducts,
+            'data' => $this->presentProduct($current, $profiles, $allUserProducts),
+            'synced_products' => $syncedProducts->map(fn (Product $item): array => $this->presentProduct($item, $profiles, $allUserProducts))->values(),
         ]);
     }
 
@@ -230,9 +241,12 @@ class ProductController extends Controller
             'business_profile_id' => $targetProfile->id,
         ], $request);
 
+        $profiles = $this->userProfiles($request);
+        $allUserProducts = $this->allUserProducts($profiles);
+
         return response()->json([
             'message' => 'Product added to selected business profile.',
-            'data' => $clone,
+            'data' => $this->presentProduct($clone, $profiles, $allUserProducts),
         ], 201);
     }
 
@@ -292,5 +306,68 @@ class ProductController extends Controller
         abort_if(! $request->user()->isAdmin() && $profile->user_id !== $request->user()->id, 403, 'Forbidden');
 
         return $profile;
+    }
+
+    private function userProfiles(Request $request): Collection
+    {
+        return BusinessProfile::query()
+            ->when(! $request->user()->isAdmin(), fn ($query) => $query->where('user_id', $request->user()->id))
+            ->get()
+            ->values();
+    }
+
+    private function allUserProducts(Collection $profiles): Collection
+    {
+        if ($profiles->isEmpty()) {
+            return collect();
+        }
+
+        return Product::query()
+            ->whereIn('business_profile_id', $profiles->pluck('id')->values()->all())
+            ->get()
+            ->map(fn (Product $product): array => [
+                'id' => (string) $product->id,
+                'business_profile_id' => (string) $product->business_profile_id,
+                'product_key' => $product->product_key ? (string) $product->product_key : null,
+            ])
+            ->values();
+    }
+
+    private function presentProduct(Product $product, Collection $profiles, Collection $allUserProducts): array
+    {
+        $groupKey = (string) ($product->product_key ?: $product->id);
+        $relatedProfileIds = $allUserProducts
+            ->filter(fn (array $item): bool => (string) ($item['product_key'] ?: $item['id']) === $groupKey)
+            ->pluck('business_profile_id')
+            ->push((string) $product->business_profile_id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $relatedProfiles = $profiles
+            ->filter(fn (BusinessProfile $profile): bool => in_array((string) $profile->id, $relatedProfileIds, true))
+            ->map(fn (BusinessProfile $profile): array => [
+                'id' => (string) $profile->id,
+                'business_name' => $profile->business_name,
+            ])
+            ->values()
+            ->all();
+
+        return [
+            'id' => (string) $product->id,
+            'business_profile_id' => (string) $product->business_profile_id,
+            'business_profile_ids' => $relatedProfileIds,
+            'business_profiles' => $relatedProfiles,
+            'product_key' => $product->product_key ? (string) $product->product_key : null,
+            'product_name' => $product->product_name,
+            'description' => $product->description,
+            'category' => $product->category,
+            'hsn_code' => $product->hsn_code,
+            'unit' => $product->unit,
+            'price' => (float) $product->price,
+            'gst_rate' => (float) $product->gst_rate,
+            'status' => $product->status,
+        ];
     }
 }
