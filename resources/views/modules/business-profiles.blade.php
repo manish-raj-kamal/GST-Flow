@@ -23,6 +23,11 @@
             </button>
         </div>
 
+        <div x-show="loading" class="mb-6 text-center py-6 text-slate-400">
+            <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
+            <p class="mt-2 text-sm">Loading business profiles...</p>
+        </div>
+
         {{-- Profiles Grid --}}
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <template x-for="profile in filtered" :key="profile.id || profile._id">
@@ -50,7 +55,7 @@
             </template>
         </div>
 
-        <template x-if="filtered.length === 0">
+        <template x-if="!loading && filtered.length === 0">
             <div class="empty-state">
                 <div class="empty-icon"><svg class="h-7 w-7 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>
                 <h3>No business profiles</h3>
@@ -109,6 +114,7 @@
         function businessProfilesPage() {
             return {
                 profiles: @json($profiles),
+                loading: false,
                 search: '',
                 showModal: false,
                 editing: null,
@@ -123,6 +129,16 @@
                 formatRegistrationDate(value) {
                     if (!value) return '—';
                     return gst.formatDate(value);
+                },
+                async loadProfiles() {
+                    this.loading = true;
+                    try {
+                        const res = await gst.api('/business-profiles');
+                        this.profiles = res?.data || [];
+                    } catch (e) {
+                        gst.toast(e.message || 'Unable to load business profiles', 'error');
+                    }
+                    this.loading = false;
                 },
                 openModal(profile = null) {
                     this.editing = profile;
@@ -158,6 +174,9 @@
                         this.showModal = false;
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
+                },
+                init() {
+                    this.loadProfiles();
                 },
             };
         }

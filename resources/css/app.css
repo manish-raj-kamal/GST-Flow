@@ -198,6 +198,26 @@
         transition: margin-left var(--transition-normal);
     }
 
+    #app-main {
+        transition: opacity var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .is-navigating #app-main {
+        opacity: 0.82;
+        transform: translateY(2px);
+    }
+
+    .is-navigating .gst-topbar {
+        box-shadow: 0 20px 38px rgba(124, 58, 237, 0.14);
+    }
+
+    .turbo-progress-bar {
+        height: 3px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #38BDF8, #7C3AED, #F472B6);
+        box-shadow: 0 10px 24px rgba(124, 58, 237, 0.35);
+    }
+
     /* ── Top Bar ── */
     .gst-topbar {
         @apply sticky top-0 z-40 flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8;
