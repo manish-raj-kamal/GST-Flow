@@ -8,6 +8,7 @@ class Product extends DocumentModel
 
     protected $fillable = [
         'business_profile_id',
+        'product_key',
         'product_name',
         'description',
         'category',

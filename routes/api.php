@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('business-profiles', BusinessProfileController::class);
     Route::apiResource('customers', CustomerController::class);
     Route::get('products/audit/tax-rates', [ProductController::class, 'auditTaxRates']);
+    Route::post('products/{product}/clone-to-profile', [ProductController::class, 'cloneToProfile']);
     Route::apiResource('products', ProductController::class);
     Route::get('hsn-codes/catalog', [HsnCodeController::class, 'catalog']);
     Route::post('hsn-codes/sync', [HsnCodeController::class, 'sync']);

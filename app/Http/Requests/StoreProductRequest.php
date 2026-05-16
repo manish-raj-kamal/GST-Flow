@@ -29,7 +29,7 @@ class StoreProductRequest extends FormRequest
             'product_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'category' => ['nullable', 'string', 'max:255'],
-            'hsn_code' => ['required', 'string', 'max:8'],
+            'hsn_code' => ['nullable', 'string', 'max:20'],
             'unit' => ['required', 'string', 'max:50'],
             'price' => ['required', 'numeric', 'min:0'],
             'gst_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],

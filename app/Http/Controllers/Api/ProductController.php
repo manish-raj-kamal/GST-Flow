@@ -11,6 +11,7 @@ use App\Services\ActivityLogService;
 use App\Services\HsnCatalogSyncService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -39,10 +40,10 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request): JsonResponse
     {
-        $hsn = HsnCode::query()->where('hsn_code', $request->validated('hsn_code'))->first();
-        if (! $hsn) {
-            return response()->json(['message' => 'HSN code not found.'], 422);
-        }
+        $hsnCodeValue = trim((string) $request->validated('hsn_code', ''));
+        $hsn = $hsnCodeValue !== ''
+            ? HsnCode::query()->where('hsn_code', $hsnCodeValue)->first()
+            : null;
 
         $targetProfileIds = collect($request->validated('business_profile_ids', []))
             ->filter()
@@ -55,19 +56,22 @@ class ProductController extends Controller
             $targetProfileIds = collect([$singleProfile]);
         }
 
+        $productKey = (string) Str::uuid();
+
         $createdProducts = $targetProfileIds
-            ->map(function (string $profileId) use ($request, $hsn): Product {
+            ->map(function (string $profileId) use ($request, $hsn, $hsnCodeValue, $productKey): Product {
                 $profile = $this->findAccessibleBusinessProfile($profileId, $request);
 
                 $product = Product::create([
                     'business_profile_id' => $profile->id,
+                    'product_key' => $productKey,
                     'product_name' => $request->validated('product_name'),
-                    'description' => $request->validated('description') ?: $hsn->description,
-                    'category' => $request->validated('category') ?: $hsn->category,
-                    'hsn_code' => $hsn->hsn_code,
+                    'description' => $request->validated('description') ?: ($hsn?->description),
+                    'category' => $request->validated('category') ?: ($hsn?->category),
+                    'hsn_code' => $hsn?->hsn_code ?: ($hsnCodeValue !== '' ? $hsnCodeValue : null),
                     'unit' => $request->validated('unit'),
                     'price' => $request->validated('price'),
-                    'gst_rate' => $request->validated('gst_rate') ?? $hsn->gst_rate,
+                    'gst_rate' => $request->validated('gst_rate') ?? ($hsn?->gst_rate),
                     'status' => $request->validated('status') ?? 'active',
                 ]);
 
@@ -99,28 +103,137 @@ class ProductController extends Controller
     public function update(StoreProductRequest $request, Product $product): JsonResponse
     {
         $this->findAccessibleBusinessProfile($product->business_profile_id, $request);
-        $hsn = HsnCode::query()->where('hsn_code', $request->validated('hsn_code'))->first();
-        if (! $hsn) {
-            return response()->json(['message' => 'HSN code not found.'], 422);
+
+        $productKey = (string) ($product->product_key ?: Str::uuid());
+        if (! $product->product_key) {
+            $product->update(['product_key' => $productKey]);
         }
 
-        $product->update([
+        $hsnCodeValue = trim((string) $request->validated('hsn_code', ''));
+        $hsn = $hsnCodeValue !== ''
+            ? HsnCode::query()->where('hsn_code', $hsnCodeValue)->first()
+            : null;
+
+        $payload = [
             'product_name' => $request->validated('product_name'),
-            'description' => $request->validated('description') ?: $hsn->description,
-            'category' => $request->validated('category') ?: $hsn->category,
-            'hsn_code' => $hsn->hsn_code,
+            'description' => $request->validated('description') ?: ($hsn?->description),
+            'category' => $request->validated('category') ?: ($hsn?->category),
+            'hsn_code' => $hsn?->hsn_code ?: ($hsnCodeValue !== '' ? $hsnCodeValue : null),
             'unit' => $request->validated('unit'),
             'price' => $request->validated('price'),
-            'gst_rate' => $request->validated('gst_rate') ?? $hsn->gst_rate,
+            'gst_rate' => $request->validated('gst_rate') ?? ($hsn?->gst_rate),
             'status' => $request->validated('status') ?? $product->status,
-        ]);
+        ];
+
+        $targetProfileIds = collect($request->validated('business_profile_ids', []))
+            ->filter()
+            ->values();
+
+        if ($targetProfileIds->isEmpty()) {
+            $targetProfileIds = collect([$product->business_profile_id]);
+        }
+
+        if (! $targetProfileIds->contains($product->business_profile_id)) {
+            $targetProfileIds->push($product->business_profile_id);
+        }
+
+        $syncedProducts = $targetProfileIds
+            ->map(function (string $profileId) use ($request, $productKey, $payload): Product {
+                $profile = $this->findAccessibleBusinessProfile($profileId, $request);
+
+                $existing = Product::query()
+                    ->where('business_profile_id', $profile->id)
+                    ->where('product_key', $productKey)
+                    ->first();
+
+                if ($existing) {
+                    $existing->update($payload);
+                    return $existing->fresh();
+                }
+
+                return Product::create(array_merge($payload, [
+                    'business_profile_id' => $profile->id,
+                    'product_key' => $productKey,
+                ]));
+            })
+            ->values();
+
+        // Remove product from profiles the user can access but are no longer selected.
+        $accessibleProfileIds = collect($request->user()->businessProfiles()->pluck('id')->values());
+        $removalProfileIds = $accessibleProfileIds->diff($targetProfileIds);
+        if ($removalProfileIds->isNotEmpty()) {
+            Product::query()
+                ->where('product_key', $productKey)
+                ->whereIn('business_profile_id', $removalProfileIds->all())
+                ->delete();
+        }
 
         $this->activityLogService->log($request->user(), 'product_updated', [
             'product_id' => $product->id,
             'business_profile_id' => $product->business_profile_id,
         ], $request);
 
-        return response()->json(['message' => 'Product updated successfully.', 'data' => $product->fresh()]);
+        $current = Product::query()->findOrFail($product->id);
+
+        return response()->json([
+            'message' => $syncedProducts->count() > 1
+                ? sprintf('Product updated and synced to %d profiles.', $syncedProducts->count())
+                : 'Product updated successfully.',
+            'data' => $current,
+            'synced_products' => $syncedProducts,
+        ]);
+    }
+
+    public function cloneToProfile(Request $request, Product $product): JsonResponse
+    {
+        $this->findAccessibleBusinessProfile($product->business_profile_id, $request);
+
+        $validated = $request->validate([
+            'target_business_profile_id' => ['required', 'string'],
+        ]);
+
+        $targetProfile = $this->findAccessibleBusinessProfile($validated['target_business_profile_id'], $request);
+
+        $productKey = (string) ($product->product_key ?: Str::uuid());
+        if (! $product->product_key) {
+            $product->update(['product_key' => $productKey]);
+        }
+
+        $existing = Product::query()
+            ->where('business_profile_id', $targetProfile->id)
+            ->where('product_key', $productKey)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'Product already exists for this business profile.',
+                'data' => $existing,
+            ]);
+        }
+
+        $clone = Product::create([
+            'business_profile_id' => $targetProfile->id,
+            'product_key' => $productKey,
+            'product_name' => $product->product_name,
+            'description' => $product->description,
+            'category' => $product->category,
+            'hsn_code' => $product->hsn_code,
+            'unit' => $product->unit,
+            'price' => $product->price,
+            'gst_rate' => $product->gst_rate,
+            'status' => $product->status,
+        ]);
+
+        $this->activityLogService->log($request->user(), 'product_cloned', [
+            'product_id' => $clone->id,
+            'source_product_id' => $product->id,
+            'business_profile_id' => $targetProfile->id,
+        ], $request);
+
+        return response()->json([
+            'message' => 'Product added to selected business profile.',
+            'data' => $clone,
+        ], 201);
     }
 
     public function destroy(Request $request, Product $product): JsonResponse
