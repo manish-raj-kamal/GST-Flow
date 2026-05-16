@@ -39,30 +39,54 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request): JsonResponse
     {
-        $profile = $this->findAccessibleBusinessProfile($request->validated('business_profile_id'), $request);
         $hsn = HsnCode::query()->where('hsn_code', $request->validated('hsn_code'))->first();
         if (! $hsn) {
             return response()->json(['message' => 'HSN code not found.'], 422);
         }
 
-        $product = Product::create([
-            'business_profile_id' => $profile->id,
-            'product_name' => $request->validated('product_name'),
-            'description' => $request->validated('description') ?: $hsn->description,
-            'category' => $request->validated('category') ?: $hsn->category,
-            'hsn_code' => $hsn->hsn_code,
-            'unit' => $request->validated('unit'),
-            'price' => $request->validated('price'),
-            'gst_rate' => $request->validated('gst_rate') ?? $hsn->gst_rate,
-            'status' => $request->validated('status') ?? 'active',
-        ]);
+        $targetProfileIds = collect($request->validated('business_profile_ids', []))
+            ->filter()
+            ->values();
 
-        $this->activityLogService->log($request->user(), 'product_created', [
-            'product_id' => $product->id,
-            'business_profile_id' => $profile->id,
-        ], $request);
+        if ($targetProfileIds->isEmpty()) {
+            $singleProfile = $request->validated('business_profile_id')
+                ?: $request->user()->businessProfiles()->first()?->id;
+            abort_if(! $singleProfile, 422, 'A business profile is required.');
+            $targetProfileIds = collect([$singleProfile]);
+        }
 
-        return response()->json(['message' => 'Product created successfully.', 'data' => $product], 201);
+        $createdProducts = $targetProfileIds
+            ->map(function (string $profileId) use ($request, $hsn): Product {
+                $profile = $this->findAccessibleBusinessProfile($profileId, $request);
+
+                $product = Product::create([
+                    'business_profile_id' => $profile->id,
+                    'product_name' => $request->validated('product_name'),
+                    'description' => $request->validated('description') ?: $hsn->description,
+                    'category' => $request->validated('category') ?: $hsn->category,
+                    'hsn_code' => $hsn->hsn_code,
+                    'unit' => $request->validated('unit'),
+                    'price' => $request->validated('price'),
+                    'gst_rate' => $request->validated('gst_rate') ?? $hsn->gst_rate,
+                    'status' => $request->validated('status') ?? 'active',
+                ]);
+
+                $this->activityLogService->log($request->user(), 'product_created', [
+                    'product_id' => $product->id,
+                    'business_profile_id' => $profile->id,
+                ], $request);
+
+                return $product;
+            })
+            ->values();
+
+        return response()->json([
+            'message' => $createdProducts->count() > 1
+                ? sprintf('Product created for %d business profiles.', $createdProducts->count())
+                : 'Product created successfully.',
+            'data' => $createdProducts->first(),
+            'created_products' => $createdProducts,
+        ], 201);
     }
 
     public function show(Request $request, Product $product): JsonResponse
