@@ -74,6 +74,17 @@
                     </div>
                     <form @submit.prevent="save()" class="space-y-4">
                         <div class="grid gap-4 sm:grid-cols-2">
+                            <template x-if="!editing">
+                                <div class="form-group sm:col-span-2">
+                                    <label class="form-label">Add product to *</label>
+                                    <select x-model="form.business_profile_ids" class="form-select" multiple size="4">
+                                        @foreach($profiles as $p)
+                                        <option value="{{ $p->id }}">{{ $p->business_name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-slate-500">Default is all business profiles.</p>
+                                </div>
+                            </template>
                             <div class="form-group sm:col-span-2"><label class="form-label">Product Name *</label><input x-model="form.product_name" class="form-input" required></div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Description</label><input x-model="form.description" class="form-input"></div>
                             <div class="form-group"><label class="form-label">HSN Code * <x-info-tip text="Selecting an HSN can auto-fill category, description, and GST rate when available." /></label>
@@ -114,6 +125,7 @@
     <script>
         function productsPage() {
             const profileId = '{{ $activeProfile?->id ?? '' }}';
+            const allProfileIds = @json($profiles->pluck('id')->values());
             return {
                 products: @json($products),
                 search: '',
@@ -137,14 +149,22 @@
                 },
                 openModal(p = null) {
                     this.editing = p;
-                    this.form = p ? { ...p } : { product_name: '', description: '', hsn_code: '', category: '', unit: 'NOS', price: '', gst_rate: '18', status: 'active', business_profile_id: profileId };
+                    this.form = p
+                        ? { ...p, business_profile_ids: [p.business_profile_id || profileId].filter(Boolean) }
+                        : { product_name: '', description: '', hsn_code: '', category: '', unit: 'NOS', price: '', gst_rate: '18', status: 'active', business_profile_id: profileId, business_profile_ids: [...allProfileIds] };
                     this.showModal = true;
                 },
                 async save() {
                     this.saving = true;
                     try {
                         const id = this.editing?.id || this.editing?._id;
-                        this.form.business_profile_id = this.form.business_profile_id || profileId;
+                        if (!id) {
+                            this.form.business_profile_ids = (this.form.business_profile_ids || []).filter(Boolean);
+                            if (this.form.business_profile_ids.length === 0) this.form.business_profile_ids = [...allProfileIds];
+                            this.form.business_profile_id = this.form.business_profile_id || this.form.business_profile_ids[0] || profileId;
+                        } else {
+                            this.form.business_profile_id = this.form.business_profile_id || profileId;
+                        }
                         const url = id ? `/products/${id}` : '/products';
                         const method = id ? 'PUT' : 'POST';
                         const res = await gst.api(url, { method, body: JSON.stringify(this.form) });
@@ -152,7 +172,12 @@
                             const idx = this.products.findIndex(x => (x.id||x._id) === id);
                             if (idx >= 0) this.products[idx] = res.data;
                         } else {
-                            this.products.push(res.data);
+                            const created = Array.isArray(res.created_products) ? res.created_products : (res.data ? [res.data] : []);
+                            if (profileId) {
+                                this.products.push(...created.filter(x => x.business_profile_id === profileId));
+                            } else {
+                                this.products.push(...created);
+                            }
                         }
                         this.showModal = false;
                         gst.toast(res.message);
