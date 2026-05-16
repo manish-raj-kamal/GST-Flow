@@ -54,8 +54,8 @@
             <div class="flex items-end gap-3">
                 <div class="form-group"><label class="form-label">Month</label><input type="month" x-model="monthFilter" class="form-input text-sm"></div>
                 <button @click="loadMonthly()" class="btn btn-primary btn-sm">Load Summary</button>
-                <a :href="'/api/export/tax-summary.csv?business_profile_id={{ $activeProfile?->id }}'" target="_blank" class="btn btn-secondary btn-sm" x-show="monthlySummary">Export CSV</a>
-                <a :href="'/api/export/monthly-summary.xls?business_profile_id={{ $activeProfile?->id }}'" target="_blank" class="btn btn-secondary btn-sm" x-show="monthlySummary">Export XLS</a>
+                <a :href="'/export/tax-summary.csv?business_profile_id={{ $activeProfile?->id }}&month=' + monthFilter" target="_blank" class="btn btn-secondary btn-sm" x-show="monthlySummary">Export CSV</a>
+                <a :href="'/export/monthly-summary.xls?business_profile_id={{ $activeProfile?->id }}&month=' + monthFilter" target="_blank" class="btn btn-secondary btn-sm" x-show="monthlySummary">Export XLS</a>
             </div>
         </div>
 
@@ -66,10 +66,10 @@
         <template x-if="tab !== 'monthly' && reportData && !loading">
             <div>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-                    <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Invoices</div><div class="mt-2 text-2xl font-bold" x-text="reportData.totals?.invoice_count || 0"></div></div>
+                    <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Invoices</div><div class="mt-2 text-2xl font-bold" x-text="reportData.invoice_count || 0"></div></div>
                     <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Taxable Value</div><div class="mt-2 text-2xl font-bold" x-text="'₹ ' + gst.formatNumber(reportData.totals?.taxable_value)"></div></div>
                     <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Total Tax</div><div class="mt-2 text-2xl font-bold text-emerald-600" x-text="'₹ ' + gst.formatNumber(reportData.totals?.total_tax)"></div></div>
-                    <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Grand Total</div><div class="mt-2 text-2xl font-bold text-amber-600" x-text="'₹ ' + gst.formatNumber(reportData.totals?.total_amount)"></div></div>
+                    <div class="metric-card"><div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Grand Total</div><div class="mt-2 text-2xl font-bold text-amber-600" x-text="'₹ ' + gst.formatNumber(reportData.totals?.grand_total)"></div></div>
                 </div>
                 <div class="card-lg overflow-hidden">
                     <div class="overflow-x-auto">
@@ -121,14 +121,14 @@
                 filters: { from_date: '', to_date: '', status: '' },
                 monthFilter: new Date().toISOString().slice(0,7),
                 get downloadUrl() {
-                    return `/api/export/sales.csv?business_profile_id=${profileId}&from_date=${this.filters.from_date}&to_date=${this.filters.to_date}&status=${this.filters.status}`;
+                    return `/export/sales.csv?business_profile_id=${profileId}&from_date=${this.filters.from_date}&to_date=${this.filters.to_date}&status=${this.filters.status}`;
                 },
                 async loadReport() {
                     if (!profileId) return;
                     this.loading = true;
                     try {
                         const q = new URLSearchParams({ business_profile_id: profileId, ...this.filters }).toString();
-                        const res = await gst.api(`/reports/${this.tab}?${q}`);
+                        const res = await gst.webApi(`/reports/${this.tab}?${q}`);
                         this.reportData = res.data;
                     } catch (e) { gst.toast(e.message, 'error'); }
                     this.loading = false;
@@ -137,7 +137,7 @@
                     if (!profileId) return;
                     this.loading = true;
                     try {
-                        const res = await gst.api(`/reports/monthly-gst-summary?business_profile_id=${profileId}&month=${this.monthFilter}`);
+                        const res = await gst.webApi(`/reports/monthly-gst-summary?business_profile_id=${profileId}&month=${this.monthFilter}`);
                         this.monthlySummary = res.data;
                     } catch (e) { gst.toast(e.message, 'error'); }
                     this.loading = false;
