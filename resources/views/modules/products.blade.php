@@ -77,11 +77,24 @@
                             <template x-if="!editing">
                                 <div class="form-group sm:col-span-2">
                                     <label class="form-label">Add product to *</label>
-                                    <select x-model="form.business_profile_ids" class="form-select" multiple size="4">
-                                        @foreach($profiles as $p)
-                                        <option value="{{ $p->id }}">{{ $p->business_name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="relative">
+                                        <button type="button" class="form-select w-full text-left" @click="profileDropdownOpen = !profileDropdownOpen">
+                                            <span class="block truncate" x-text="selectedProfilesLabel()"></span>
+                                        </button>
+                                        <div x-show="profileDropdownOpen" x-transition @click.outside="profileDropdownOpen = false" class="absolute z-30 mt-2 w-full rounded-xl border bg-white p-2 shadow-lg" style="border-color: hsl(var(--gst-border));">
+                                            <button type="button" class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold hover:bg-slate-50" @click="toggleAllProfiles()">
+                                                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" :checked="isAllProfilesSelected()">
+                                                <span>All Profiles</span>
+                                            </button>
+                                            <div class="my-1 h-px bg-slate-100"></div>
+                                            <template x-for="profile in profileOptions" :key="profile.id">
+                                                <button type="button" class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-slate-50" @click="toggleProfile(profile.id)">
+                                                    <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500" :checked="isProfileSelected(profile.id)">
+                                                    <span class="truncate" x-text="profile.name"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
                                     <p class="mt-1 text-xs text-slate-500">Default is all business profiles.</p>
                                 </div>
                             </template>
@@ -126,18 +139,46 @@
         function productsPage() {
             const profileId = '{{ $activeProfile?->id ?? '' }}';
             const allProfileIds = @json($profiles->pluck('id')->values());
+            const profileOptions = @json($profiles->map(fn($p) => ['id' => (string) $p->id, 'name' => $p->business_name])->values());
             return {
                 products: @json($products),
                 search: '',
                 showModal: false,
+                profileDropdownOpen: false,
                 editing: null,
                 saving: false,
                 form: {},
+                profileOptions,
                 get filtered() {
                     const q = this.search.toLowerCase();
                     return this.products.filter(p =>
                         !q || (p.product_name||'').toLowerCase().includes(q) || (p.hsn_code||'').toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q)
                     );
+                },
+                selectedProfilesLabel() {
+                    const selected = this.profileOptions.filter(p => this.isProfileSelected(p.id));
+                    if (selected.length === 0) return 'Select profiles';
+                    if (selected.length === this.profileOptions.length) return 'All Profiles';
+                    if (selected.length <= 2) return selected.map(p => p.name).join(', ');
+                    return `${selected.length} profiles selected`;
+                },
+                isProfileSelected(profileIdValue) {
+                    return (this.form.business_profile_ids || []).includes(profileIdValue);
+                },
+                isAllProfilesSelected() {
+                    return this.profileOptions.length > 0
+                        && (this.form.business_profile_ids || []).length === this.profileOptions.length;
+                },
+                toggleProfile(profileIdValue) {
+                    const current = [...(this.form.business_profile_ids || [])];
+                    if (current.includes(profileIdValue)) {
+                        this.form.business_profile_ids = current.filter(id => id !== profileIdValue);
+                    } else {
+                        this.form.business_profile_ids = [...current, profileIdValue];
+                    }
+                },
+                toggleAllProfiles() {
+                    this.form.business_profile_ids = this.isAllProfilesSelected() ? [] : [...allProfileIds];
                 },
                 autoFillHsn() {
                     const opt = document.querySelector(`select option[value="${this.form.hsn_code}"]`);
@@ -152,6 +193,7 @@
                     this.form = p
                         ? { ...p, business_profile_ids: [p.business_profile_id || profileId].filter(Boolean) }
                         : { product_name: '', description: '', hsn_code: '', category: '', unit: 'NOS', price: '', gst_rate: '18', status: 'active', business_profile_id: profileId, business_profile_ids: [...allProfileIds] };
+                    this.profileDropdownOpen = false;
                     this.showModal = true;
                 },
                 async save() {
