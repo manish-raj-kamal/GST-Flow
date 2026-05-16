@@ -218,17 +218,68 @@
 
                     return sellerStateCode !== buyerStateCode;
                 },
-                onProfileChange() {
-                    // Could reload customers for selected profile
+                async onProfileChange(resetSelections = true) {
+                    const bid = this.form.business_profile_id;
+                    if (!bid) {
+                        this.customers = [];
+                        this.products = [];
+                        if (resetSelections) {
+                            this.form.customer_id = '';
+                            this.form.items.forEach(i => i.product_id = '');
+                        }
+                        this.recalc();
+                        return;
+                    }
+
+                    try {
+                        const [custRes, prodRes] = await Promise.all([
+                            gst.api(`/customers?business_profile_id=${bid}`),
+                            gst.api(`/products?business_profile_id=${bid}`),
+                        ]);
+                        this.customers = custRes?.data || [];
+                        this.products = prodRes?.data || [];
+                        if (resetSelections) {
+                            this.form.customer_id = '';
+                            this.form.items.forEach(i => i.product_id = '');
+                        }
+                        this.recalc();
+                    } catch (e) {
+                        gst.toast(e.message || 'Error loading profile data', 'error');
+                    }
                 },
-                async submit() {
+                async submit(attemptAutoFix = true) {
                     if (!this.form.items.length) { gst.toast('Add at least one item', 'error'); return; }
                     this.saving = true;
                     try {
                         const res = await gst.api('/invoices', { method: 'POST', body: JSON.stringify(this.form) });
                         gst.toast(res.message);
                         window.location.href = '/invoices?business_profile_id=' + this.form.business_profile_id;
-                    } catch (e) { gst.toast(e.message || 'Error creating invoice', 'error'); }
+                    } catch (e) {
+                        if (attemptAutoFix && e?.status === 422 && e?.code === 'PRODUCT_PROFILE_MISMATCH' && e?.data?.clone_url) {
+                            const name = e.data.product_name || 'This product';
+                            const ok = confirm(`${name} is not available in the selected business profile.\n\nDo you want to add it to this business and continue?`);
+                            if (ok) {
+                                try {
+                                    const cloneRes = await gst.api(e.data.clone_url, { method: 'POST', body: JSON.stringify(e.data.clone_payload || { target_business_profile_id: this.form.business_profile_id }) });
+                                    const newProduct = cloneRes?.data;
+                                    const oldId = e.data.product_id;
+                                    const newId = newProduct?.id || newProduct?._id;
+                                    if (newId) {
+                                        this.form.items.forEach(item => {
+                                            if (item.product_id === oldId) item.product_id = newId;
+                                        });
+                                        await this.onProfileChange(false);
+                                        gst.toast('Product added to this business. Retrying invoice...', 'info');
+                                        this.saving = false;
+                                        return this.submit(false);
+                                    }
+                                } catch (cloneErr) {
+                                    gst.toast(cloneErr.message || 'Failed to add product to this business', 'error');
+                                }
+                            }
+                        }
+                        gst.toast(e.message || 'Error creating invoice', 'error');
+                    }
                     this.saving = false;
                 },
             };
