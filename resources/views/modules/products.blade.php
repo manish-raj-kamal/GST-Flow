@@ -154,6 +154,8 @@
             const profileId = '{{ $activeProfile?->id ?? '' }}';
             const allProfileIds = @json($profiles->pluck('id')->values());
             const profileOptions = @json($profiles->map(fn($p) => ['id' => (string) $p->id, 'name' => $p->business_name])->values());
+            const productsCacheKey = profileId ? `products:${profileId}` : 'products:none';
+            const hsnCacheKey = 'hsn-codes:active';
             return {
                 products: @json($products),
                 hsnCodes: [],
@@ -221,9 +223,14 @@
                 },
                 async ensureHsnCodesLoaded() {
                     if (this.hsnCodes.length > 0) return;
+                    const cached = gst.readCache(hsnCacheKey, 300000);
+                    if (Array.isArray(cached) && cached.length > 0) {
+                        this.hsnCodes = cached;
+                    }
                     try {
                         const res = await gst.api('/hsn-codes?status=active');
                         this.hsnCodes = res?.data || [];
+                        gst.writeCache(hsnCacheKey, this.hsnCodes);
                     } catch (e) {
                         gst.toast(e.message || 'Unable to load HSN codes', 'error');
                     }
@@ -235,10 +242,16 @@
                         return;
                     }
 
+                    const cached = gst.readCache(productsCacheKey, 300000);
+                    if (Array.isArray(cached) && cached.length > 0) {
+                        this.products = cached;
+                    }
+
                     this.loading = true;
                     try {
                         const res = await gst.api(`/products?business_profile_id=${profileId}`);
                         this.products = res?.data || [];
+                        gst.writeCache(productsCacheKey, this.products);
                     } catch (e) {
                         gst.toast(e.message || 'Unable to load products', 'error');
                     }
@@ -295,6 +308,7 @@
                                 this.products.push(...created);
                             }
                         }
+                        gst.writeCache(productsCacheKey, this.products);
 
                         this.showModal = false;
                         gst.toast(res.message);
@@ -309,6 +323,7 @@
                     try {
                         const res = await gst.api(`/products/${id}`, { method: 'DELETE' });
                         this.products = this.products.filter(x => (x.id||x._id) !== id);
+                        gst.writeCache(productsCacheKey, this.products);
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
                 },
