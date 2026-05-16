@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Api\BusinessProfileController as ApiBusinessProfileController;
 use App\Http\Controllers\Api\CustomerController as ApiCustomerController;
 use App\Http\Controllers\Api\InvoiceController as ApiInvoiceController;
 use App\Http\Controllers\Api\ProductController as ApiProductController;
+use App\Http\Controllers\Api\ReportController as ApiReportController;
+use App\Http\Controllers\Api\ExportController as ApiExportController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +26,9 @@ Route::middleware('auth')->group(function () {
 
     // Module pages
     Route::get('/business-profiles', [PageController::class, 'businessProfiles'])->name('business-profiles');
+    Route::post('/business-profiles', [ApiBusinessProfileController::class, 'store']);
+    Route::put('/business-profiles/{businessProfile}', [ApiBusinessProfileController::class, 'update']);
+    Route::delete('/business-profiles/{businessProfile}', [ApiBusinessProfileController::class, 'destroy']);
     Route::get('/customers', [PageController::class, 'customers'])->name('customers');
     Route::post('/customers', [ApiCustomerController::class, 'store']);
     Route::put('/customers/{customer}', [ApiCustomerController::class, 'update']);
@@ -43,6 +49,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/invoices/{invoice}/status', [ApiInvoiceController::class, 'updateStatus']);
     Route::get('/invoices/{invoice}/versions', [ApiInvoiceController::class, 'versions']);
     Route::get('/reports', [PageController::class, 'reports'])->name('reports');
+    Route::get('/reports/sales', [ApiReportController::class, 'sales']);
+    Route::get('/reports/purchases', [ApiReportController::class, 'purchases']);
+    Route::get('/reports/monthly-gst-summary', [ApiReportController::class, 'monthlyGstSummary']);
+    Route::get('/export/invoices/{invoice}/pdf', [ApiExportController::class, 'invoicePdf']);
+    Route::get('/export/sales.csv', [ApiExportController::class, 'salesCsv']);
+    Route::get('/export/tax-summary.csv', [ApiExportController::class, 'taxSummaryCsv']);
+    Route::get('/export/monthly-summary.xls', [ApiExportController::class, 'monthlySummaryXls']);
     Route::get('/gstr-summary', [PageController::class, 'gstrSummary'])->name('gstr-summary');
     Route::get('/admin', [PageController::class, 'admin'])->name('admin');
     Route::get('/activity-logs', [PageController::class, 'activityLogs'])->name('activity-logs');

@@ -24,6 +24,8 @@ class StoreCustomerRequest extends FormRequest
     {
         return [
             'business_profile_id' => ['required', 'string'],
+            'business_profile_ids' => ['nullable', 'array', 'min:1'],
+            'business_profile_ids.*' => ['required', 'string'],
             'customer_name' => ['required', 'string', 'max:255'],
             'gstin' => ['nullable', 'string', 'size:15'],
             'state' => ['nullable', 'string', 'max:255'],
