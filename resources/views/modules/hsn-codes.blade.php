@@ -104,38 +104,6 @@
         </div>
         @endif
 
-        @if(auth()->user()->isAdmin())
-        <div class="mb-6 grid gap-4 lg:grid-cols-3" x-show="analyticsReady">
-            <div class="card-lg">
-                <h3 class="panel-title !mt-0">Most searched terms</h3>
-                <div class="mt-3 space-y-2 text-sm">
-                    <template x-for="row in analytics.most_searched" :key="row.query">
-                        <div class="flex items-center justify-between"><span x-text="row.query"></span><span class="font-semibold text-slate-900" x-text="row.count"></span></div>
-                    </template>
-                </div>
-            </div>
-            <div class="card-lg">
-                <h3 class="panel-title !mt-0">Failed searches</h3>
-                <div class="mt-3 space-y-2 text-sm">
-                    <template x-for="row in analytics.failed_searches" :key="row.query">
-                        <div class="flex items-center justify-between"><span x-text="row.query"></span><span class="font-semibold text-red-600" x-text="row.count"></span></div>
-                    </template>
-                </div>
-            </div>
-            <div class="card-lg">
-                <h3 class="panel-title !mt-0">Low confidence reviews</h3>
-                <div class="mt-3 space-y-2 text-sm">
-                    <template x-for="row in analytics.low_confidence" :key="row.query + row.created_at">
-                        <div class="rounded-xl border px-3 py-2" style="border-color: hsl(var(--gst-border));">
-                            <p class="font-semibold text-slate-900" x-text="row.query"></p>
-                            <p class="text-xs text-slate-500" x-text="'Confidence ' + row.confidence + '% • Results ' + row.results_count"></p>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-        @endif
-
         <div x-show="loadingTable" class="mb-6 text-center py-6 text-slate-400">
             <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
             <p class="mt-2 text-sm">Loading HSN codes...</p>
