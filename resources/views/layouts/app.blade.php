@@ -126,7 +126,7 @@
                     });
                     if (!res.ok) {
                         const err = await res.json().catch(() => ({}));
-                        throw { status: res.status, message: err.message || 'Request failed', errors: err.errors };
+                        throw { status: res.status, message: err.message || 'Request failed', errors: err.errors, code: err.code, data: err.data };
                     }
                     if (res.status === 204) return null;
                     const contentType = res.headers.get('content-type');
