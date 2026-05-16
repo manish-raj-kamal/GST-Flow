@@ -126,6 +126,7 @@
         function customersPage() {
             const profileId = '{{ $activeProfile?->id ?? '' }}';
             const profiles = @json($profiles);
+            const cacheKey = profileId ? `customers:${profileId}` : 'customers:none';
             return {
                 customers: @json($customers),
                 availableProfiles: profiles,
@@ -165,10 +166,16 @@
                         return;
                     }
 
+                    const cached = gst.readCache(cacheKey, 300000);
+                    if (Array.isArray(cached) && cached.length > 0) {
+                        this.customers = cached;
+                    }
+
                     this.loading = true;
                     try {
                         const res = await gst.api(`/customers?business_profile_id=${profileId}`);
                         this.customers = res?.data || [];
+                        gst.writeCache(cacheKey, this.customers);
                     } catch (e) {
                         gst.toast(e.message || 'Unable to load customers', 'error');
                     }
@@ -194,6 +201,7 @@
                         } else {
                             this.customers.push(res.data);
                         }
+                        gst.writeCache(cacheKey, this.customers);
                         this.showModal = false;
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
@@ -205,6 +213,7 @@
                     try {
                         const res = await gst.api(`/customers/${id}`, { method: 'DELETE' });
                         this.customers = this.customers.filter(p => (p.id||p._id) !== id);
+                        gst.writeCache(cacheKey, this.customers);
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
                 },
