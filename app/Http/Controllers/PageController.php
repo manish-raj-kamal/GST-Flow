@@ -77,6 +77,17 @@ class PageController extends Controller
                 ? Product::query()->where('business_profile_id', $profile->id)->get()
                 : collect();
             $profiles = $this->getUserProfiles($request);
+            $allUserProducts = $profiles->isNotEmpty()
+                ? Product::query()
+                    ->whereIn('business_profile_id', $profiles->pluck('id')->values()->all())
+                    ->get()
+                    ->map(fn (Product $p) => [
+                        'id' => (string) $p->id,
+                        'business_profile_id' => (string) $p->business_profile_id,
+                        'product_key' => $p->product_key ? (string) $p->product_key : null,
+                    ])
+                    ->values()
+                : collect();
             $hsnCodes = HsnCode::query()->where('status', 'active')->get();
             $taxSlabs = TaxSlab::query()->where('status', 'active')->get();
         } catch (Throwable) {
@@ -84,6 +95,7 @@ class PageController extends Controller
             $profiles = collect();
             $hsnCodes = collect();
             $taxSlabs = collect();
+            $allUserProducts = collect();
             $profile = null;
         }
         return view('modules.products', [
@@ -92,6 +104,7 @@ class PageController extends Controller
             'activeProfile' => $profile,
             'hsnCodes' => $hsnCodes,
             'taxSlabs' => $taxSlabs,
+            'allUserProducts' => $allUserProducts,
             'pageTitle' => 'Products',
         ]);
     }
