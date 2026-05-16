@@ -113,8 +113,8 @@
         <script>
             window.gst = {
                 csrfToken: document.querySelector('meta[name="csrf-token"]').content,
-                async api(url, options = {}) {
-                    const res = await fetch('/api' + url, {
+                async request(url, options = {}) {
+                    const res = await fetch(url, {
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
@@ -132,6 +132,12 @@
                     const contentType = res.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) return res.json();
                     return res;
+                },
+                async api(url, options = {}) {
+                    return this.request('/api' + url, options);
+                },
+                async webApi(url, options = {}) {
+                    return this.request(url, options);
                 },
                 toast(message, type = 'success') {
                     const container = document.getElementById('toast-container');

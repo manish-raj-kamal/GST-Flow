@@ -13,6 +13,7 @@ use App\Models\TaxSlab;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Throwable;
 
 class PageController extends Controller
@@ -28,11 +29,57 @@ class PageController extends Controller
         return $profile;
     }
 
-    private function getUserProfiles(Request $request)
+    private function getUserProfiles(Request $request): Collection
     {
         return BusinessProfile::query()
             ->when(! $request->user()->isAdmin(), fn ($q) => $q->where('user_id', $request->user()->id))
             ->get();
+    }
+
+    private function customersForProfile(?BusinessProfile $profile): Collection
+    {
+        if (! $profile) {
+            return collect();
+        }
+
+        return Customer::query()
+            ->get()
+            ->filter(fn (Customer $customer): bool => $customer->isRelatedToProfile((string) $profile->id))
+            ->values();
+    }
+
+    private function presentCustomers(Collection $customers, Collection $profiles, ?BusinessProfile $contextProfile = null): Collection
+    {
+        return $customers->map(function (Customer $customer) use ($profiles, $contextProfile): array {
+            $relatedProfiles = $customer->relatedBusinessProfiles($profiles)
+                ->map(fn (BusinessProfile $profile): array => [
+                    'id' => (string) $profile->id,
+                    'business_name' => $profile->business_name,
+                ])
+                ->values()
+                ->all();
+
+            $relatedProfileIds = collect($relatedProfiles)->pluck('id')->all();
+            $contextStateCode = $contextProfile?->state_code;
+
+            return [
+                'id' => (string) $customer->id,
+                'business_profile_id' => (string) ($customer->business_profile_id ?: ($relatedProfileIds[0] ?? '')),
+                'business_profile_ids' => $relatedProfileIds,
+                'business_profiles' => $relatedProfiles,
+                'customer_name' => $customer->customer_name,
+                'gstin' => $customer->gstin,
+                'state' => $customer->state,
+                'state_code' => $customer->state_code,
+                'address' => $customer->address,
+                'phone' => $customer->phone,
+                'email' => $customer->email,
+                'customer_type' => $customer->customer_type,
+                'is_interstate' => $contextStateCode && $customer->state_code
+                    ? $contextStateCode !== $customer->state_code
+                    : (bool) $customer->is_interstate,
+            ];
+        })->values();
     }
 
     public function businessProfiles(Request $request): View
@@ -52,10 +99,8 @@ class PageController extends Controller
     {
         try {
             $profile = $this->resolveProfile($request);
-            $customers = $profile
-                ? Customer::query()->where('business_profile_id', $profile->id)->get()
-                : collect();
             $profiles = $this->getUserProfiles($request);
+            $customers = $this->presentCustomers($this->customersForProfile($profile), $profiles, $profile);
         } catch (Throwable) {
             $customers = collect();
             $profiles = collect();
@@ -143,9 +188,7 @@ class PageController extends Controller
                 ? Invoice::query()->where('business_profile_id', $profile->id)->where('status', '!=', 'deleted')->get()->sortByDesc('invoice_date')->values()
                 : collect();
             $profiles = $this->getUserProfiles($request);
-            $customers = $profile
-                ? Customer::query()->where('business_profile_id', $profile->id)->get()
-                : collect();
+            $customers = $this->presentCustomers($this->customersForProfile($profile), $profiles, $profile);
         } catch (Throwable) {
             $invoices = collect();
             $profiles = collect();
@@ -166,7 +209,7 @@ class PageController extends Controller
         try {
             $profile = $this->resolveProfile($request);
             $profiles = $this->getUserProfiles($request);
-            $customers = $profile ? Customer::query()->where('business_profile_id', $profile->id)->get() : collect();
+            $customers = $this->presentCustomers($this->customersForProfile($profile), $profiles, $profile);
             $products = $profile ? Product::query()->where('business_profile_id', $profile->id)->where('status', 'active')->get() : collect();
             $stateCodes = StateCode::query()->orderBy('code')->get();
         } catch (Throwable) {

@@ -177,6 +177,7 @@ class InvoiceWorkflowService
     {
         $businessProfile = BusinessProfile::query()->findOrFail($validated['business_profile_id']);
         $customer = Customer::query()->findOrFail($validated['customer_id']);
+        abort_unless($customer->isRelatedToProfile((string) $businessProfile->id), 422, 'Selected customer is not related to the chosen business profile.');
 
         $transactionType = $validated['transaction_type'];
         $sellerStateCode = $transactionType === 'purchase'

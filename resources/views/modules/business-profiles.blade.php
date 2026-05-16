@@ -130,7 +130,7 @@
                         const id = this.editing?.id || this.editing?._id;
                         const url = id ? `/business-profiles/${id}` : '/business-profiles';
                         const method = id ? 'PUT' : 'POST';
-                        const res = await gst.api(url, { method, body: JSON.stringify(this.form) });
+                        const res = await gst.webApi(url, { method, body: JSON.stringify(this.form) });
                         if (id) {
                             const idx = this.profiles.findIndex(p => (p.id||p._id) === id);
                             if (idx >= 0) this.profiles[idx] = res.data;
@@ -146,7 +146,7 @@
                     if (!confirm('Delete this business profile and all associated data?')) return;
                     const id = this.editing.id || this.editing._id;
                     try {
-                        const res = await gst.api(`/business-profiles/${id}`, { method: 'DELETE' });
+                        const res = await gst.webApi(`/business-profiles/${id}`, { method: 'DELETE' });
                         this.profiles = this.profiles.filter(p => (p.id||p._id) !== id);
                         this.showModal = false;
                         gst.toast(res.message);

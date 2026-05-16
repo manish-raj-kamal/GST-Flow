@@ -79,7 +79,10 @@ class BusinessProfileController extends Controller
         return response()->json([
             'data' => $businessProfile,
             'stats' => [
-                'customers' => Customer::query()->where('business_profile_id', $businessProfile->id)->count(),
+                'customers' => Customer::query()
+                    ->get()
+                    ->filter(fn (Customer $customer): bool => $customer->isRelatedToProfile((string) $businessProfile->id))
+                    ->count(),
                 'products' => Product::query()->where('business_profile_id', $businessProfile->id)->count(),
                 'invoices' => Invoice::query()->where('business_profile_id', $businessProfile->id)->count(),
             ],
@@ -131,7 +134,28 @@ class BusinessProfileController extends Controller
     {
         $this->authorizeBusinessProfile($request, $businessProfile);
 
-        Customer::query()->where('business_profile_id', $businessProfile->id)->delete();
+        Customer::query()->get()->each(function (Customer $customer) use ($businessProfile): void {
+            if (! $customer->isRelatedToProfile((string) $businessProfile->id)) {
+                return;
+            }
+
+            $remainingProfileIds = collect($customer->relatedBusinessProfileIds())
+                ->reject(fn (string $id): bool => $id === (string) $businessProfile->id)
+                ->values()
+                ->all();
+
+            if (empty($remainingProfileIds)) {
+                $customer->delete();
+
+                return;
+            }
+
+            $customer->update([
+                'business_profile_id' => $remainingProfileIds[0],
+                'business_profile_ids' => $remainingProfileIds,
+                'is_interstate' => false,
+            ]);
+        });
         Product::query()->where('business_profile_id', $businessProfile->id)->delete();
         Invoice::query()->where('business_profile_id', $businessProfile->id)->delete();
         $businessProfile->delete();
