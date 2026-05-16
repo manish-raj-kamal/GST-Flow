@@ -32,13 +32,32 @@ class ExportController extends Controller
         abort_if(! $profile, 422, 'No business profile is available for this user.');
         $report = $reportService->salesReport($profile, $request->user(), $request->only(['from_date', 'to_date', 'customer_id', 'status']));
 
+        return $this->streamInvoiceCsv($report, 'sales-report.csv');
+    }
+
+    public function purchaseCsv(Request $request, GstReportService $reportService): StreamedResponse
+    {
+        $profile = $reportService->resolveProfile($request->user(), $request->query('business_profile_id'));
+        abort_if(! $profile, 422, 'No business profile is available for this user.');
+        $report = $reportService->purchaseReport($profile, $request->user(), $request->only(['from_date', 'to_date', 'customer_id', 'status']));
+
+        return $this->streamInvoiceCsv($report, 'purchase-report.csv');
+    }
+
+    private function streamInvoiceCsv(array $report, string $filename): StreamedResponse
+    {
         return response()->streamDownload(function () use ($report): void {
             $handle = fopen('php://output', 'wb');
             fputcsv($handle, ['Invoice Number', 'Invoice Date', 'Customer', 'Taxable Value', 'CGST', 'SGST', 'IGST', 'Total', 'Status']);
             foreach ($report['invoices'] as $invoice) {
+                $invoiceDate = $invoice['invoice_date'] ?? null;
+                if ($invoiceDate instanceof \DateTimeInterface) {
+                    $invoiceDate = $invoiceDate->format('Y-m-d');
+                }
+
                 fputcsv($handle, [
                     $invoice['invoice_number'],
-                    optional($invoice['invoice_date'])->toDateString(),
+                    $invoiceDate,
                     $invoice['customer_id'],
                     $invoice['taxable_value'],
                     $invoice['cgst'],
@@ -49,7 +68,7 @@ class ExportController extends Controller
                 ]);
             }
             fclose($handle);
-        }, 'sales-report.csv', ['Content-Type' => 'text/csv']);
+        }, $filename, ['Content-Type' => 'text/csv']);
     }
 
     public function taxSummaryCsv(Request $request, GstReportService $reportService): StreamedResponse

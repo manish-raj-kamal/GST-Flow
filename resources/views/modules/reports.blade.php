@@ -121,7 +121,8 @@
                 filters: { from_date: '', to_date: '', status: '' },
                 monthFilter: new Date().toISOString().slice(0,7),
                 get downloadUrl() {
-                    return `/export/sales.csv?business_profile_id=${profileId}&from_date=${this.filters.from_date}&to_date=${this.filters.to_date}&status=${this.filters.status}`;
+                    const file = this.tab === 'purchases' ? 'purchases.csv' : 'sales.csv';
+                    return `/export/${file}?business_profile_id=${profileId}&from_date=${this.filters.from_date}&to_date=${this.filters.to_date}&status=${this.filters.status}`;
                 },
                 async loadReport() {
                     if (!profileId) return;
