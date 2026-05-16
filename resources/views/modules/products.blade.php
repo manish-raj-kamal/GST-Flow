@@ -31,6 +31,11 @@
             </button>
         </div>
 
+        <div x-show="loading" class="mb-6 text-center py-6 text-slate-400">
+            <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
+            <p class="mt-2 text-sm">Loading products...</p>
+        </div>
+
         <div class="card-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="data-table">
@@ -57,7 +62,7 @@
                     </tbody>
                 </table>
             </div>
-            <template x-if="filtered.length === 0">
+            <template x-if="!loading && filtered.length === 0">
                 <div class="empty-state py-12">
                     <div class="empty-icon"><svg class="h-7 w-7 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
                     <h3>No products yet</h3>
@@ -103,9 +108,14 @@
                                 <select x-ref="hsnSelect" x-model="form.hsn_code" class="form-select" @change="autoFillHsn()">
                                     <option value="">Select HSN (optional)</option>
                                     <option value="__OTHER__">Others / Not listed</option>
-                                    @foreach($hsnCodes as $h)
-                                    <option value="{{ $h->hsn_code }}" data-rate="{{ $h->gst_rate }}" data-cat="{{ $h->category }}" data-desc="{{ $h->description }}">{{ $h->hsn_code }} — {{ Str::limit($h->description, 40) }}</option>
-                                    @endforeach
+                                    <template x-for="hsn in hsnCodes" :key="hsn.id || hsn.hsn_code">
+                                        <option
+                                            :value="hsn.hsn_code"
+                                            :data-rate="hsn.gst_rate"
+                                            :data-cat="hsn.category || ''"
+                                            :data-desc="hsn.description || ''"
+                                            x-text="`${hsn.hsn_code} — ${truncateText(hsn.description, 40)}`"></option>
+                                    </template>
                                 </select>
                                 <div class="mt-2" x-show="form.hsn_code === '__OTHER__'">
                                     <label class="form-label text-xs">Enter HSN code (optional)</label>
@@ -144,9 +154,10 @@
             const profileId = '{{ $activeProfile?->id ?? '' }}';
             const allProfileIds = @json($profiles->pluck('id')->values());
             const profileOptions = @json($profiles->map(fn($p) => ['id' => (string) $p->id, 'name' => $p->business_name])->values());
-            const allUserProducts = @json($allUserProducts);
             return {
                 products: @json($products),
+                hsnCodes: [],
+                loading: false,
                 search: '',
                 showModal: false,
                 profileDropdownOpen: false,
@@ -169,6 +180,10 @@
                 profileTooltip(product) {
                     const names = (product.business_profiles || []).map(profile => profile.business_name).filter(Boolean);
                     return names.length ? names.join(', ') : 'No related business profiles';
+                },
+                truncateText(text, limit = 40) {
+                    const value = String(text || '');
+                    return value.length > limit ? `${value.slice(0, limit - 1)}…` : value;
                 },
                 selectedProfilesLabel() {
                     const selected = this.profileOptions.filter(p => this.isProfileSelected(p.id));
@@ -204,17 +219,38 @@
                         if (!this.form.description) this.form.description = opt.dataset.desc || '';
                     }
                 },
-                openModal(p = null) {
+                async ensureHsnCodesLoaded() {
+                    if (this.hsnCodes.length > 0) return;
+                    try {
+                        const res = await gst.api('/hsn-codes?status=active');
+                        this.hsnCodes = res?.data || [];
+                    } catch (e) {
+                        gst.toast(e.message || 'Unable to load HSN codes', 'error');
+                    }
+                },
+                async loadProducts() {
+                    if (!profileId) {
+                        this.products = [];
+                        this.loading = false;
+                        return;
+                    }
+
+                    this.loading = true;
+                    try {
+                        const res = await gst.api(`/products?business_profile_id=${profileId}`);
+                        this.products = res?.data || [];
+                    } catch (e) {
+                        gst.toast(e.message || 'Unable to load products', 'error');
+                    }
+                    this.loading = false;
+                },
+                async openModal(p = null) {
+                    await this.ensureHsnCodesLoaded();
                     this.editing = p;
                     if (p) {
-                        let selected = [p.business_profile_id || profileId].filter(Boolean);
-                        if (p.product_key) {
-                            const byKey = (allUserProducts || [])
-                                .filter(x => x.product_key && x.product_key === p.product_key)
-                                .map(x => x.business_profile_id)
-                                .filter(Boolean);
-                            if (byKey.length) selected = [...new Set(byKey)];
-                        }
+                        const selected = Array.isArray(p.business_profile_ids) && p.business_profile_ids.length
+                            ? [...new Set(p.business_profile_ids.filter(Boolean))]
+                            : [p.business_profile_id || profileId].filter(Boolean);
                         this.form = { ...p, business_profile_ids: selected, hsn_code: p.hsn_code || '', hsn_code_manual: '' };
                     } else {
                         this.form = { product_name: '', description: '', hsn_code: '', hsn_code_manual: '', category: '', unit: 'NOS', price: '', gst_rate: '18', status: 'active', business_profile_id: profileId, business_profile_ids: [...allProfileIds] };
@@ -275,6 +311,9 @@
                         this.products = this.products.filter(x => (x.id||x._id) !== id);
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
+                },
+                init() {
+                    this.loadProducts();
                 },
             };
         }

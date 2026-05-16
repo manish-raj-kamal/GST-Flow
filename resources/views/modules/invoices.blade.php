@@ -38,6 +38,11 @@
             </a>
         </div>
 
+        <div x-show="loading" class="mb-6 text-center py-6 text-slate-400">
+            <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
+            <p class="mt-2 text-sm">Loading invoices...</p>
+        </div>
+
         {{-- Stats row --}}
         <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div class="metric-card">
@@ -87,7 +92,7 @@
                     </tbody>
                 </table>
             </div>
-            <template x-if="filtered.length === 0">
+            <template x-if="!loading && filtered.length === 0">
                 <div class="empty-state py-12">
                     <div class="empty-icon"><svg class="h-7 w-7 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
                     <h3>No invoices yet</h3>
@@ -157,9 +162,11 @@
 
     <script>
         function invoicesPage() {
-            const customersMap = Object.fromEntries(@json($customers).map(c => [c.id || c._id, c.customer_name]));
+            const profileId = '{{ $activeProfile?->id ?? '' }}';
             return {
                 invoices: @json($invoices),
+                customersMap: Object.fromEntries(@json($customers).map(c => [c.id || c._id, c.customer_name])),
+                loading: false,
                 search: '',
                 statusFilter: '',
                 viewingInvoice: null,
@@ -171,7 +178,30 @@
                         return (inv.invoice_number||'').toLowerCase().includes(q) || (inv.place_of_supply||'').toLowerCase().includes(q) || this.customerName(inv.customer_id).toLowerCase().includes(q);
                     });
                 },
-                customerName(id) { return customersMap[id] || '—'; },
+                customerName(id) { return this.customersMap[id] || '—'; },
+                async loadInvoices() {
+                    if (!profileId) {
+                        this.invoices = [];
+                        this.customersMap = {};
+                        this.loading = false;
+                        return;
+                    }
+
+                    this.loading = true;
+                    try {
+                        const [customersResponse, invoicesResponse] = await Promise.all([
+                            gst.api(`/customers?business_profile_id=${profileId}`),
+                            gst.api(`/invoices?business_profile_id=${profileId}`),
+                        ]);
+
+                        const customers = customersResponse?.data || [];
+                        this.customersMap = Object.fromEntries(customers.map(c => [c.id || c._id, c.customer_name]));
+                        this.invoices = invoicesResponse?.data || [];
+                    } catch (e) {
+                        gst.toast(e.message || 'Unable to load invoices', 'error');
+                    }
+                    this.loading = false;
+                },
                 viewInvoice(inv) { this.viewingInvoice = inv; },
                 async duplicateInvoice(inv) {
                     if (!confirm('Duplicate this invoice?')) return;
@@ -205,6 +235,9 @@
                     } catch (e) {
                         gst.toast(e.message || 'Error updating status', 'error');
                     }
+                },
+                init() {
+                    this.loadInvoices();
                 },
             };
         }
