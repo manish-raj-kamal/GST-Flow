@@ -163,6 +163,8 @@
     <script>
         function invoicesPage() {
             const profileId = '{{ $activeProfile?->id ?? '' }}';
+            const invoicesCacheKey = profileId ? `invoices:${profileId}` : 'invoices:none';
+            const customersCacheKey = profileId ? `customers:${profileId}` : 'customers:none';
             return {
                 invoices: @json($invoices),
                 customersMap: Object.fromEntries(@json($customers).map(c => [c.id || c._id, c.customer_name])),
@@ -187,6 +189,15 @@
                         return;
                     }
 
+                    const cachedInvoices = gst.readCache(invoicesCacheKey, 300000);
+                    const cachedCustomers = gst.readCache(customersCacheKey, 300000);
+                    if (Array.isArray(cachedCustomers) && cachedCustomers.length > 0) {
+                        this.customersMap = Object.fromEntries(cachedCustomers.map(c => [c.id || c._id, c.customer_name]));
+                    }
+                    if (Array.isArray(cachedInvoices) && cachedInvoices.length > 0) {
+                        this.invoices = cachedInvoices;
+                    }
+
                     this.loading = true;
                     try {
                         const [customersResponse, invoicesResponse] = await Promise.all([
@@ -197,6 +208,8 @@
                         const customers = customersResponse?.data || [];
                         this.customersMap = Object.fromEntries(customers.map(c => [c.id || c._id, c.customer_name]));
                         this.invoices = invoicesResponse?.data || [];
+                        gst.writeCache(customersCacheKey, customers);
+                        gst.writeCache(invoicesCacheKey, this.invoices);
                     } catch (e) {
                         gst.toast(e.message || 'Unable to load invoices', 'error');
                     }
@@ -208,6 +221,7 @@
                     try {
                         const res = await gst.api(`/invoices/${inv.id || inv._id}/duplicate`, { method: 'POST' });
                         this.invoices.unshift(res.data);
+                        gst.writeCache(invoicesCacheKey, this.invoices);
                         gst.toast(res.message);
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
                 },
@@ -217,6 +231,7 @@
                     try {
                         await gst.api(`/invoices/${id}`, { method: 'DELETE' });
                         this.invoices = this.invoices.filter(i => (i.id||i._id) !== id);
+                        gst.writeCache(invoicesCacheKey, this.invoices);
                         gst.toast('Invoice deleted');
                     } catch (e) { gst.toast(e.message || 'Error', 'error'); }
                 },
@@ -231,6 +246,7 @@
                         const idx = this.invoices.findIndex(i => (i.id || i._id) === id);
                         if (idx >= 0) this.invoices[idx] = res.data;
                         this.viewingInvoice = res.data;
+                        gst.writeCache(invoicesCacheKey, this.invoices);
                         gst.toast(res.message);
                     } catch (e) {
                         gst.toast(e.message || 'Error updating status', 'error');
