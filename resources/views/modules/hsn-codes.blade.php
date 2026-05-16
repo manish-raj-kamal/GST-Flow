@@ -11,13 +11,56 @@
     </x-slot>
 
     <div class="p-4 sm:p-6 lg:p-8" x-data="hsnPage()">
-        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="search-bar max-w-sm flex-1">
-                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" x-model="search" @input="fetchCatalog()" placeholder="Search item, category, or HSN..." class="flex-1">
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="relative max-w-xl flex-1">
+                <div class="search-bar">
+                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" x-model="search" @input="onSmartInput()" @keydown="onSmartKeydown($event)" @focus="smartOpen = smartResults.length > 0 || noResultSuggestions.length > 0" placeholder="Smart search: paneer, ghee, laptop, mobile charger..." class="flex-1">
+                    <span class="text-[10px] text-slate-400" x-show="smartLoading">Searching...</span>
+                </div>
+                <div class="mt-2 flex flex-wrap gap-2" x-show="recentSearches.length > 0 && !smartOpen">
+                    <template x-for="term in recentSearches" :key="term">
+                        <button type="button" class="rounded-full border px-3 py-1 text-xs text-slate-600 hover:bg-slate-50" style="border-color: hsl(var(--gst-border));" @click="useRecent(term)" x-text="term"></button>
+                    </template>
+                </div>
+                <div x-show="smartOpen" x-transition class="absolute z-30 mt-2 max-h-96 w-full overflow-auto rounded-2xl border bg-white shadow-xl" style="border-color: hsl(var(--gst-border));">
+                    <template x-if="smartResults.length > 0">
+                        <div class="py-2">
+                            <template x-for="(item, index) in smartResults" :key="item.hsn_code + '-' + index">
+                                <button type="button" class="flex w-full items-start justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50" :class="index === activeResultIndex ? 'bg-violet-50' : ''" @mouseenter="activeResultIndex = index" @click="chooseResult(item)">
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-mono text-xs text-slate-600" x-text="item.hsn_code"></span>
+                                            <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700" x-text="item.category || 'General'"></span>
+                                        </div>
+                                        <p class="truncate text-sm font-semibold text-slate-900" x-html="highlight(item.name)"></p>
+                                        <p class="truncate text-xs text-slate-500" x-text="item.matched_alias || item.official_description"></p>
+                                    </div>
+                                    <div class="shrink-0 text-right">
+                                        <span class="badge badge-info" x-text="(item.gst_rate ?? 0) + '%'"></span>
+                                        <p class="mt-1 text-[11px] font-semibold" :class="confidenceClass(item.confidence)" x-text="'Confidence ' + item.confidence + '%'"></p>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                    <template x-if="smartResults.length === 0 && !smartLoading">
+                        <div class="p-4">
+                            <p class="text-sm font-semibold text-slate-800">No exact results found.</p>
+                            <p class="mt-1 text-xs text-slate-500">Try these suggestions:</p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <template x-for="suggestion in noResultSuggestions" :key="suggestion">
+                                    <button type="button" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700" @click="useRecent(suggestion)" x-text="suggestion"></button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </div>
             @if(auth()->user()->isAdmin())
             <div class="flex gap-2">
+                <input type="file" class="hidden" x-ref="importFile" accept=".csv,.xls,.xlsx" @change="importCatalog()">
+                <button @click="$refs.importFile.click()" class="btn btn-secondary">Import CSV/XLS</button>
                 <button @click="syncCatalog()" class="btn btn-secondary">
                     Sync HSN Catalog
                 </button>
@@ -59,6 +102,38 @@
                 </template>
             </div>
         </div>
+
+        @if(auth()->user()->isAdmin())
+        <div class="mb-6 grid gap-4 lg:grid-cols-3" x-show="analyticsReady">
+            <div class="card-lg">
+                <h3 class="panel-title !mt-0">Most searched terms</h3>
+                <div class="mt-3 space-y-2 text-sm">
+                    <template x-for="row in analytics.most_searched" :key="row.query">
+                        <div class="flex items-center justify-between"><span x-text="row.query"></span><span class="font-semibold text-slate-900" x-text="row.count"></span></div>
+                    </template>
+                </div>
+            </div>
+            <div class="card-lg">
+                <h3 class="panel-title !mt-0">Failed searches</h3>
+                <div class="mt-3 space-y-2 text-sm">
+                    <template x-for="row in analytics.failed_searches" :key="row.query">
+                        <div class="flex items-center justify-between"><span x-text="row.query"></span><span class="font-semibold text-red-600" x-text="row.count"></span></div>
+                    </template>
+                </div>
+            </div>
+            <div class="card-lg">
+                <h3 class="panel-title !mt-0">Low confidence reviews</h3>
+                <div class="mt-3 space-y-2 text-sm">
+                    <template x-for="row in analytics.low_confidence" :key="row.query + row.created_at">
+                        <div class="rounded-xl border px-3 py-2" style="border-color: hsl(var(--gst-border));">
+                            <p class="font-semibold text-slate-900" x-text="row.query"></p>
+                            <p class="text-xs text-slate-500" x-text="'Confidence ' + row.confidence + '% • Results ' + row.results_count"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <div class="card-lg overflow-hidden">
             <div class="overflow-x-auto">
@@ -124,6 +199,19 @@
             return {
                 codes: @json($codes),
                 search: '',
+                smartResults: [],
+                smartOpen: false,
+                smartLoading: false,
+                activeResultIndex: -1,
+                noResultSuggestions: [],
+                recentSearches: [],
+                smartSearchTimer: null,
+                analyticsReady: false,
+                analytics: {
+                    most_searched: [],
+                    failed_searches: [],
+                    low_confidence: [],
+                },
                 showModal: false,
                 editing: null,
                 saving: false,
@@ -134,6 +222,97 @@
                 get filtered() {
                     const q = this.search.toLowerCase();
                     return this.codes.filter(c => !q || (c.hsn_code||'').toLowerCase().includes(q) || (c.description||'').toLowerCase().includes(q));
+                },
+                onSmartInput() {
+                    clearTimeout(this.smartSearchTimer);
+                    if ((this.search || '').trim().length < 2) {
+                        this.smartResults = [];
+                        this.noResultSuggestions = [];
+                        this.smartOpen = false;
+                        this.fetchCatalog();
+                        return;
+                    }
+                    this.smartSearchTimer = setTimeout(() => this.performSmartSearch(), 300);
+                    this.fetchCatalog();
+                },
+                async performSmartSearch() {
+                    this.smartLoading = true;
+                    this.smartOpen = true;
+                    this.activeResultIndex = -1;
+                    try {
+                        const q = encodeURIComponent(this.search.trim());
+                        const res = await gst.api(`/hsn/search?q=${q}&limit=8`);
+                        this.smartResults = res.results || [];
+                        this.noResultSuggestions = res?.meta?.suggestions || [];
+                    } catch (e) {
+                        this.smartResults = [];
+                        this.noResultSuggestions = [];
+                    }
+                    this.smartLoading = false;
+                },
+                async chooseResult(item) {
+                    this.search = item.name || this.search;
+                    this.smartOpen = false;
+                    this.rememberSearch(this.search);
+                    try {
+                        await gst.api('/hsn/search/select', {
+                            method: 'POST',
+                            body: JSON.stringify({ query: this.search, hsn_code: item.hsn_code }),
+                        });
+                    } catch (e) {}
+                },
+                onSmartKeydown(e) {
+                    if (!this.smartOpen || this.smartResults.length === 0) return;
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.activeResultIndex = Math.min(this.smartResults.length - 1, this.activeResultIndex + 1);
+                        return;
+                    }
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.activeResultIndex = Math.max(0, this.activeResultIndex - 1);
+                        return;
+                    }
+                    if (e.key === 'Enter' && this.activeResultIndex >= 0) {
+                        e.preventDefault();
+                        this.chooseResult(this.smartResults[this.activeResultIndex]);
+                        return;
+                    }
+                    if (e.key === 'Escape') {
+                        this.smartOpen = false;
+                    }
+                },
+                highlight(text) {
+                    const value = String(text || '');
+                    const q = (this.search || '').trim();
+                    if (!q) return value;
+                    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    return value.replace(new RegExp(`(${escaped})`, 'ig'), '<mark class="rounded bg-yellow-100 px-0.5">$1</mark>');
+                },
+                confidenceClass(confidence) {
+                    const score = Number(confidence || 0);
+                    if (score >= 85) return 'text-emerald-600';
+                    if (score >= 65) return 'text-amber-600';
+                    return 'text-rose-600';
+                },
+                useRecent(term) {
+                    this.search = term;
+                    this.onSmartInput();
+                },
+                rememberSearch(term) {
+                    const value = String(term || '').trim();
+                    if (value.length < 2) return;
+                    const current = this.recentSearches.filter(x => x !== value);
+                    this.recentSearches = [value, ...current].slice(0, 6);
+                    localStorage.setItem('gst:hsn:recent-searches', JSON.stringify(this.recentSearches));
+                },
+                loadRecentSearches() {
+                    try {
+                        const payload = JSON.parse(localStorage.getItem('gst:hsn:recent-searches') || '[]');
+                        this.recentSearches = Array.isArray(payload) ? payload : [];
+                    } catch (e) {
+                        this.recentSearches = [];
+                    }
                 },
                 async fetchCatalog() {
                     this.loadingCatalog = true;
@@ -157,6 +336,41 @@
                         gst.toast(e.message || 'Unable to sync catalog', 'error');
                     }
                     this.syncRunning = false;
+                },
+                async importCatalog() {
+                    const file = this.$refs.importFile?.files?.[0];
+                    if (!file) return;
+                    const body = new FormData();
+                    body.append('file', file);
+                    try {
+                        const res = await fetch('/api/hsn/import', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': gst.csrfToken,
+                            },
+                            credentials: 'same-origin',
+                            body,
+                        });
+                        const payload = await res.json();
+                        if (!res.ok) throw new Error(payload?.message || 'Import failed');
+                        const info = payload?.data || {};
+                        gst.toast(`Import done. Created ${info.created || 0}, Updated ${info.updated || 0}`, 'info');
+                    } catch (e) {
+                        gst.toast(e.message || 'Import failed', 'error');
+                    }
+                    this.$refs.importFile.value = '';
+                },
+                async loadAnalytics() {
+                    @if(auth()->user()->isAdmin())
+                    try {
+                        const res = await gst.api('/hsn/analytics');
+                        this.analytics = res.data || this.analytics;
+                    } catch (e) {
+                        this.analytics = { most_searched: [], failed_searches: [], low_confidence: [] };
+                    }
+                    this.analyticsReady = true;
+                    @endif
                 },
                 async reloadCodes() {
                     try {
@@ -186,7 +400,9 @@
                     try { await gst.api(`/hsn-codes/${c.id || c._id}`, { method: 'DELETE' }); this.codes = this.codes.filter(x => (x.id||x._id) !== (c.id||c._id)); gst.toast('Deleted'); } catch (e) { gst.toast(e.message, 'error'); }
                 },
                 init() {
+                    this.loadRecentSearches();
                     this.fetchCatalog();
+                    this.loadAnalytics();
                 },
             };
         }
