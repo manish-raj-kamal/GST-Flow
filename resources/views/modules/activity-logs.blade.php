@@ -57,15 +57,21 @@
 
     <script>
         function activityLogsPage() {
+            const cacheKey = 'activity-logs:index';
             return {
                 search: '',
                 logs: @js($logs),
                 loading: false,
                 async loadLogs() {
+                    const cached = gst.readCache(cacheKey, 120000);
+                    if (Array.isArray(cached) && cached.length > 0) {
+                        this.logs = cached;
+                    }
                     this.loading = true;
                     try {
                         const res = await gst.api('/activity-logs');
                         this.logs = res?.data || [];
+                        gst.writeCache(cacheKey, this.logs);
                     } catch (e) {
                         gst.toast(e.message || 'Unable to load activity logs', 'error');
                     }
