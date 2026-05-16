@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\CustomerController as ApiCustomerController;
+use App\Http\Controllers\Api\InvoiceController as ApiInvoiceController;
 use App\Http\Controllers\Api\ProductController as ApiProductController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
@@ -34,6 +35,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/tax-slabs', [PageController::class, 'taxSlabs'])->name('tax-slabs');
     Route::get('/invoices', [PageController::class, 'invoices'])->name('invoices');
     Route::get('/invoices/create', [PageController::class, 'invoiceForm'])->name('invoices.create');
+    Route::post('/invoices', [ApiInvoiceController::class, 'store']);
+    Route::put('/invoices/{invoice}', [ApiInvoiceController::class, 'update']);
+    Route::delete('/invoices/{invoice}', [ApiInvoiceController::class, 'destroy']);
+    Route::post('/invoices/{invoice}/duplicate', [ApiInvoiceController::class, 'duplicate']);
+    Route::patch('/invoices/{invoice}/status', [ApiInvoiceController::class, 'updateStatus']);
+    Route::get('/invoices/{invoice}/versions', [ApiInvoiceController::class, 'versions']);
     Route::get('/reports', [PageController::class, 'reports'])->name('reports');
     Route::get('/gstr-summary', [PageController::class, 'gstrSummary'])->name('gstr-summary');
     Route::get('/admin', [PageController::class, 'admin'])->name('admin');
