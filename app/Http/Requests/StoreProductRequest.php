@@ -23,7 +23,9 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'business_profile_id' => ['required', 'string'],
+            'business_profile_id' => ['nullable', 'string', 'required_without:business_profile_ids'],
+            'business_profile_ids' => ['nullable', 'array'],
+            'business_profile_ids.*' => ['required', 'string', 'distinct'],
             'product_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'category' => ['nullable', 'string', 'max:255'],
