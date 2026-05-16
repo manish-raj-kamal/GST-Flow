@@ -37,7 +37,7 @@
                                         <p class="truncate text-xs text-slate-500" x-text="item.matched_alias || item.official_description"></p>
                                     </div>
                                     <div class="shrink-0 text-right">
-                                        <span class="badge badge-info" x-text="(item.gst_rate ?? 0) + '%'"></span>
+                                        <span class="text-sm font-extrabold" :class="rateColorClass(item.gst_rate)" x-text="(item.gst_rate ?? 0) + '%'"></span>
                                         <p class="mt-1 text-[11px] font-semibold" :class="confidenceClass(item.confidence)" x-text="'Confidence ' + item.confidence + '%'"></p>
                                     </div>
                                 </button>
@@ -72,36 +72,37 @@
             @endif
         </div>
 
-        <div class="card-lg mb-6" x-show="groupedResults.length > 0 || loadingCatalog">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="panel-title !mt-0">HSN Categories</h3>
-                <span class="text-xs text-slate-500" x-show="loadingCatalog">Loading...</span>
+        @if(auth()->user()->isAdmin())
+        <div class="mb-6 grid gap-4 lg:grid-cols-3" x-show="analyticsReady">
+            <div class="card-lg">
+                <h3 class="panel-title !mt-0">Most searched terms</h3>
+                <div class="mt-3 space-y-2 text-sm">
+                    <template x-for="row in analytics.most_searched" :key="row.query">
+                        <div class="flex items-center justify-between"><span x-text="row.query"></span><span class="font-semibold text-slate-900" x-text="row.count"></span></div>
+                    </template>
+                </div>
             </div>
-            <div class="space-y-2" x-show="!loadingCatalog">
-                <template x-for="group in groupedResults" :key="group.category">
-                    <details class="rounded-xl border p-3" style="border-color: hsl(var(--gst-border));">
-                        <summary class="cursor-pointer font-semibold text-slate-900">
-                            <span x-text="group.category"></span>
-                            <span class="text-xs text-slate-500 ml-2" x-text="'(' + group.count + ' items)'"></span>
-                        </summary>
-                        <div class="mt-3 overflow-x-auto">
-                            <table class="data-table">
-                                <thead><tr><th>HSN</th><th>Item</th><th>GST</th></tr></thead>
-                                <tbody>
-                                    <template x-for="item in group.items" :key="item.id">
-                                        <tr>
-                                            <td class="font-mono" x-text="item.hsn_code"></td>
-                                            <td x-text="item.description"></td>
-                                            <td><span class="badge badge-info" x-text="item.gst_rate + '%'"></span></td>
-                                        </tr>
-                                    </template>
-                                </tbody>
-                            </table>
+            <div class="card-lg">
+                <h3 class="panel-title !mt-0">Failed searches</h3>
+                <div class="mt-3 space-y-2 text-sm">
+                    <template x-for="row in analytics.failed_searches" :key="row.query">
+                        <div class="flex items-center justify-between"><span x-text="row.query"></span><span class="font-semibold text-red-600" x-text="row.count"></span></div>
+                    </template>
+                </div>
+            </div>
+            <div class="card-lg">
+                <h3 class="panel-title !mt-0">Low confidence reviews</h3>
+                <div class="mt-3 space-y-2 text-sm">
+                    <template x-for="row in analytics.low_confidence" :key="row.query + row.created_at">
+                        <div class="rounded-xl border px-3 py-2" style="border-color: hsl(var(--gst-border));">
+                            <p class="font-semibold text-slate-900" x-text="row.query"></p>
+                            <p class="text-xs text-slate-500" x-text="'Confidence ' + row.confidence + '% • Results ' + row.results_count"></p>
                         </div>
-                    </details>
-                </template>
+                    </template>
+                </div>
             </div>
         </div>
+        @endif
 
         @if(auth()->user()->isAdmin())
         <div class="mb-6 grid gap-4 lg:grid-cols-3" x-show="analyticsReady">
@@ -138,7 +139,7 @@
         <div class="card-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>HSN Code</th><th>Description</th><th>Category</th><th>GST Rate</th><th>Effective Date</th><th>Status</th>
+                    <thead><tr><th>HSN Code</th><th>Description</th><th>GST Rate</th><th>Effective Date</th><th>Status</th>
                         @if(auth()->user()->isAdmin())<th class="text-right">Actions</th>@endif
                     </tr></thead>
                     <tbody>
@@ -146,8 +147,7 @@
                             <tr>
                                 <td class="font-mono font-medium text-slate-900" x-text="c.hsn_code"></td>
                                 <td class="max-w-xs truncate" x-text="c.description"></td>
-                                <td x-text="c.category || '—'"></td>
-                                <td><span class="badge badge-info" x-text="c.gst_rate + '%'"></span></td>
+                                <td><span class="text-sm font-extrabold" :class="rateColorClass(c.gst_rate)" x-text="c.gst_rate + '%'"></span></td>
                                 <td class="text-sm text-slate-500" x-text="gst.formatDate(c.effective_date)"></td>
                                 <td><span class="badge" :class="c.status==='active' ? 'badge-active' : 'badge-inactive'" x-text="c.status"></span></td>
                                 @if(auth()->user()->isAdmin())
@@ -179,7 +179,6 @@
                             <div class="form-group"><label class="form-label">HSN Code * <x-info-tip text="HSN or SAC classification code used to identify the tax category." /></label><input x-model="form.hsn_code" class="form-input font-mono" maxlength="8" required></div>
                             <div class="form-group"><label class="form-label">GST Rate (%) * <x-info-tip text="Default GST rate applied when this HSN is selected for a product." /></label><input type="number" step="0.01" x-model="form.gst_rate" class="form-input" required></div>
                             <div class="form-group sm:col-span-2"><label class="form-label">Description *</label><input x-model="form.description" class="form-input" required></div>
-                            <div class="form-group"><label class="form-label">Category</label><input x-model="form.category" class="form-input"></div>
                             <div class="form-group"><label class="form-label">Effective Date</label><input type="date" x-model="form.effective_date" class="form-input"></div>
                             <div class="form-group"><label class="form-label">Status</label><select x-model="form.status" class="form-select"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                         </div>
@@ -216,8 +215,6 @@
                 editing: null,
                 saving: false,
                 form: {},
-                groupedResults: [],
-                loadingCatalog: false,
                 syncRunning: false,
                 get filtered() {
                     const q = this.search.toLowerCase();
@@ -229,7 +226,6 @@
                             id: `smart-${idx}-${row.hsn_code}`,
                             hsn_code: row.hsn_code,
                             description: row.official_description || row.name || '',
-                            category: row.category || 'General',
                             gst_rate: row.gst_rate || 0,
                             effective_date: null,
                             status: 'active',
@@ -243,11 +239,9 @@
                         this.smartResults = [];
                         this.noResultSuggestions = [];
                         this.smartOpen = false;
-                        this.fetchCatalog();
                         return;
                     }
                     this.smartSearchTimer = setTimeout(() => this.performSmartSearch(), 300);
-                    this.fetchCatalog();
                 },
                 async performSmartSearch() {
                     this.smartLoading = true;
@@ -310,6 +304,15 @@
                     if (score >= 65) return 'text-amber-600';
                     return 'text-rose-600';
                 },
+                rateColorClass(rate) {
+                    const value = Number(rate);
+                    if (value === 0) return 'text-emerald-500';
+                    if (value === 5) return 'text-sky-500';
+                    if (value === 12) return 'text-amber-500';
+                    if (value === 18) return 'text-cyan-700';
+                    if (value === 28) return 'text-red-500';
+                    return 'text-slate-700';
+                },
                 useRecent(term) {
                     this.search = term;
                     this.onSmartInput();
@@ -328,17 +331,6 @@
                     } catch (e) {
                         this.recentSearches = [];
                     }
-                },
-                async fetchCatalog() {
-                    this.loadingCatalog = true;
-                    try {
-                        const query = this.search ? `?search=${encodeURIComponent(this.search)}` : '';
-                        const res = await gst.api(`/hsn-codes/catalog${query}`);
-                        this.groupedResults = res.data || [];
-                    } catch (e) {
-                        this.groupedResults = [];
-                    }
-                    this.loadingCatalog = false;
                 },
                 async syncCatalog() {
                     if (this.syncRunning) return;
@@ -391,12 +383,11 @@
                     try {
                         const res = await gst.api('/hsn-codes');
                         this.codes = res.data || [];
-                        await this.fetchCatalog();
                     } catch (e) {}
                 },
                 openModal(c = null) {
                     this.editing = c;
-                    this.form = c ? { ...c } : { hsn_code: '', description: '', category: '', gst_rate: '', effective_date: '', status: 'active' };
+                    this.form = c ? { ...c } : { hsn_code: '', description: '', gst_rate: '', effective_date: '', status: 'active' };
                     this.showModal = true;
                 },
                 async save() {
@@ -416,7 +407,6 @@
                 },
                 init() {
                     this.loadRecentSearches();
-                    this.fetchCatalog();
                     this.loadAnalytics();
                 },
             };
