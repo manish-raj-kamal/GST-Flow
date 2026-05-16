@@ -142,7 +142,7 @@
                         @if(auth()->user()->isAdmin())<th class="text-right">Actions</th>@endif
                     </tr></thead>
                     <tbody>
-                        <template x-for="c in filtered" :key="c.id || c._id">
+                        <template x-for="c in tableRows" :key="c.id || c._id || c.hsn_code">
                             <tr>
                                 <td class="font-mono font-medium text-slate-900" x-text="c.hsn_code"></td>
                                 <td class="max-w-xs truncate" x-text="c.description"></td>
@@ -161,7 +161,7 @@
                     </tbody>
                 </table>
             </div>
-            <template x-if="filtered.length === 0">
+            <template x-if="tableRows.length === 0">
                 <div class="empty-state py-12"><h3>No HSN codes found</h3><p>HSN codes define the GST classification for goods and services.</p></div>
             </template>
         </div>
@@ -223,6 +223,20 @@
                     const q = this.search.toLowerCase();
                     return this.codes.filter(c => !q || (c.hsn_code||'').toLowerCase().includes(q) || (c.description||'').toLowerCase().includes(q));
                 },
+                get tableRows() {
+                    if ((this.search || '').trim().length >= 2 && this.smartResults.length > 0) {
+                        return this.smartResults.map((row, idx) => ({
+                            id: `smart-${idx}-${row.hsn_code}`,
+                            hsn_code: row.hsn_code,
+                            description: row.official_description || row.name || '',
+                            category: row.category || 'General',
+                            gst_rate: row.gst_rate || 0,
+                            effective_date: null,
+                            status: 'active',
+                        }));
+                    }
+                    return this.filtered;
+                },
                 onSmartInput() {
                     clearTimeout(this.smartSearchTimer);
                     if ((this.search || '').trim().length < 2) {
@@ -242,8 +256,9 @@
                     try {
                         const q = encodeURIComponent(this.search.trim());
                         const res = await gst.api(`/hsn/search?q=${q}&limit=8`);
-                        this.smartResults = res.results || [];
+                        this.smartResults = Array.isArray(res?.results) ? res.results : [];
                         this.noResultSuggestions = res?.meta?.suggestions || [];
+                        this.rememberSearch(this.search);
                     } catch (e) {
                         this.smartResults = [];
                         this.noResultSuggestions = [];

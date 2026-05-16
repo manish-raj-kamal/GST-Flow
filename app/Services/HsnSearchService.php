@@ -209,6 +209,9 @@ class HsnSearchService
         if (empty($products)) {
             $products = $this->fallbackCandidatesFromLegacyCatalog($tokens, $category);
         }
+        if (empty($products)) {
+            $products = $this->builtInCandidates($tokens, $category);
+        }
 
         $scored = collect($products)
             ->map(fn (array $candidate) => $this->scoreCandidate($candidate, $normalized))
@@ -307,6 +310,113 @@ class HsnSearchService
             ->all();
 
         return $rows;
+    }
+
+    private function builtInCandidates(array $tokens, ?string $category): array
+    {
+        $catalog = [
+            [
+                'hsn_code' => '04061000',
+                'primary_name' => 'Paneer',
+                'aliases' => ['fresh cheese', 'cottage cheese', 'curd cheese', 'panir'],
+                'keywords' => ['dairy', 'milk product', 'curd', 'cheese'],
+                'category' => 'Dairy Products',
+                'subcategory' => 'Fresh Cheese',
+                'official_description' => 'Fresh cheese and curd based products',
+                'gst_rate' => 5.0,
+                'search_weight' => 92,
+            ],
+            [
+                'hsn_code' => '04059020',
+                'primary_name' => 'Ghee',
+                'aliases' => ['clarified butter', 'desi ghee', 'cow ghee', 'milk fat'],
+                'keywords' => ['dairy fat', 'butter oil', 'milk product'],
+                'category' => 'Dairy Products',
+                'subcategory' => 'Milk Fats',
+                'official_description' => 'Milk fats and oils derived from milk',
+                'gst_rate' => 12.0,
+                'search_weight' => 95,
+            ],
+            [
+                'hsn_code' => '04051000',
+                'primary_name' => 'Butter',
+                'aliases' => ['makhan', 'dairy butter'],
+                'keywords' => ['milk fat', 'dairy'],
+                'category' => 'Dairy Products',
+                'subcategory' => 'Butter',
+                'official_description' => 'Butter and related dairy fat products',
+                'gst_rate' => 12.0,
+                'search_weight' => 88,
+            ],
+            [
+                'hsn_code' => '19053100',
+                'primary_name' => 'Biscuits',
+                'aliases' => ['biscuit', 'biscits', 'cookies', 'cracker'],
+                'keywords' => ['snacks', 'bakery'],
+                'category' => 'Food Products',
+                'subcategory' => 'Bakery',
+                'official_description' => 'Sweet biscuits and similar bakery products',
+                'gst_rate' => 18.0,
+                'search_weight' => 84,
+            ],
+            [
+                'hsn_code' => '84713010',
+                'primary_name' => 'Laptop',
+                'aliases' => ['notebook', 'portable computer'],
+                'keywords' => ['computer', 'electronics'],
+                'category' => 'Electronics',
+                'subcategory' => 'Computers',
+                'official_description' => 'Portable automatic data processing machine',
+                'gst_rate' => 18.0,
+                'search_weight' => 90,
+            ],
+            [
+                'hsn_code' => '85044030',
+                'primary_name' => 'Mobile Charger',
+                'aliases' => ['phone charger', 'usb charger', 'adapter'],
+                'keywords' => ['mobile accessory', 'electrical accessory'],
+                'category' => 'Electronics',
+                'subcategory' => 'Accessories',
+                'official_description' => 'Power adapters and chargers for mobile devices',
+                'gst_rate' => 18.0,
+                'search_weight' => 86,
+            ],
+        ];
+
+        $normalizedCategory = $category ? Str::lower($category) : null;
+
+        return collect($catalog)
+            ->filter(function (array $item) use ($tokens, $normalizedCategory): bool {
+                if ($normalizedCategory && ! str_contains(Str::lower((string) $item['category']), $normalizedCategory)) {
+                    return false;
+                }
+
+                if (empty($tokens)) {
+                    return true;
+                }
+
+                $haystack = Str::lower(
+                    implode(' ', [
+                        $item['hsn_code'],
+                        $item['primary_name'],
+                        implode(' ', $item['aliases'] ?? []),
+                        implode(' ', $item['keywords'] ?? []),
+                        $item['official_description'],
+                        $item['category'],
+                        $item['subcategory'],
+                    ])
+                );
+
+                foreach ($tokens as $token) {
+                    if (str_contains($haystack, Str::lower((string) $token))) {
+                        return true;
+                    }
+                }
+
+                return false;
+            })
+            ->values()
+            ->all();
     }
 
     private function scoreCandidate(array $candidate, array $normalized): array
