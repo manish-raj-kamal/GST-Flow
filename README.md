@@ -109,16 +109,6 @@ npm run build
 - `resources/views/modules` – module pages (Blade + Alpine)
 - `routes/api.php` / `routes/web.php` – route definitions
 
-## Testing
-
-Run tests:
-
-```bash
-composer test
-```
-
-> Note: tests require a working MongoDB setup and compatible PHP MongoDB extension.
-
 ## License
 
 Internal project repository. Use according to your organization’s policy.
