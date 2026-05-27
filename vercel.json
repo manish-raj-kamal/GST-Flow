@@ -54,6 +54,9 @@
     "SESSION_DRIVER": "cookie",
     "FILESYSTEM_DISK": "local",
     "DB_CONNECTION": "mongodb",
-    "LOG_CHANNEL": "stderr"
+    "LOG_CHANNEL": "stderr",
+    "SANCTUM_STATEFUL_DOMAINS": "gst-flow-manager.vercel.app",
+    "SESSION_DOMAIN": "gst-flow-manager.vercel.app",
+    "SESSION_SECURE_COOKIE": "true"
   }
 }
