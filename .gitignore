@@ -24,3 +24,5 @@ Homestead.yaml
 Thumbs.db
 /database/database.sqlite
 /.gemini
+extract_pptx.py
+GST Flow v2.pptx
