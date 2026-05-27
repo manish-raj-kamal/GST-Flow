@@ -203,11 +203,20 @@ class PageController extends Controller
             $profiles = collect();
             $profile = null;
         }
+        $invoices = $profile
+            ? Invoice::query()
+                ->where('business_profile_id', $profile->id)
+                ->get()
+                ->filter(fn (Invoice $invoice) => $invoice->status !== 'deleted')
+                ->sortByDesc('invoice_date')
+                ->values()
+            : collect();
+        $customers = $this->presentCustomers($this->customersForProfile($profile), $profiles, $profile);
         return view('modules.invoices', [
-            'invoices' => collect(),
+            'invoices' => $invoices,
             'profiles' => $profiles,
             'activeProfile' => $profile,
-            'customers' => collect(),
+            'customers' => $customers,
             'pageTitle' => 'Invoices',
         ]);
     }

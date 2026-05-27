@@ -189,6 +189,11 @@
                         return;
                     }
 
+                    if (this.invoices.length > 0) {
+                        gst.writeCache(invoicesCacheKey, this.invoices);
+                        return;
+                    }
+
                     const cachedInvoices = gst.readCache(invoicesCacheKey, 300000);
                     const cachedCustomers = gst.readCache(customersCacheKey, 300000);
                     if (Array.isArray(cachedCustomers) && cachedCustomers.length > 0) {
@@ -211,7 +216,7 @@
                         gst.writeCache(customersCacheKey, customers);
                         gst.writeCache(invoicesCacheKey, this.invoices);
                     } catch (e) {
-                        gst.toast(e.message || 'Unable to load invoices', 'error');
+                        if (!this.invoices.length) gst.toast(e.message || 'Unable to load invoices', 'error');
                     }
                     this.loading = false;
                 },
