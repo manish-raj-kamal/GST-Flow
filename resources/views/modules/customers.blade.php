@@ -166,6 +166,11 @@
                         return;
                     }
 
+                    if (this.customers.length > 0) {
+                        gst.writeCache(cacheKey, this.customers);
+                        return;
+                    }
+
                     const cached = gst.readCache(cacheKey, 300000);
                     if (Array.isArray(cached) && cached.length > 0) {
                         this.customers = cached;
@@ -177,7 +182,7 @@
                         this.customers = res?.data || [];
                         gst.writeCache(cacheKey, this.customers);
                     } catch (e) {
-                        gst.toast(e.message || 'Unable to load customers', 'error');
+                        if (!this.customers.length) gst.toast(e.message || 'Unable to load customers', 'error');
                     }
                     this.loading = false;
                 },

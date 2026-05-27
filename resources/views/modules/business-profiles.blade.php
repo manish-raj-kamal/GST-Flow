@@ -132,6 +132,10 @@
                     return gst.formatDate(value);
                 },
                 async loadProfiles() {
+                    if (this.profiles.length > 0) {
+                        gst.writeCache(cacheKey, this.profiles);
+                        return;
+                    }
                     const cached = gst.readCache(cacheKey, 300000);
                     if (Array.isArray(cached) && cached.length > 0) {
                         this.profiles = cached;
@@ -142,7 +146,7 @@
                         this.profiles = res?.data || [];
                         gst.writeCache(cacheKey, this.profiles);
                     } catch (e) {
-                        gst.toast(e.message || 'Unable to load business profiles', 'error');
+                        if (!this.profiles.length) gst.toast(e.message || 'Unable to load business profiles', 'error');
                     }
                     this.loading = false;
                 },

@@ -82,8 +82,31 @@ class PageController extends Controller
 
     public function businessProfiles(Request $request): View
     {
+        try {
+            $profiles = $this->getUserProfiles($request)
+                ->map(fn (BusinessProfile $profile): array => [
+                    'id' => (string) $profile->id,
+                    'user_id' => (string) $profile->user_id,
+                    'business_name' => $profile->business_name,
+                    'legal_name' => $profile->legal_name,
+                    'gstin' => $profile->gstin,
+                    'pan' => $profile->pan,
+                    'address' => $profile->address,
+                    'city' => $profile->city,
+                    'state' => $profile->state,
+                    'state_code' => $profile->state_code,
+                    'pincode' => $profile->pincode,
+                    'email' => $profile->email,
+                    'phone' => $profile->phone,
+                    'business_type' => $profile->business_type,
+                    'registration_date' => optional($profile->registration_date)->toDateString(),
+                ])
+                ->values();
+        } catch (Throwable) {
+            $profiles = collect();
+        }
         return view('modules.business-profiles', [
-            'profiles' => collect(),
+            'profiles' => $profiles,
             'pageTitle' => 'Business Profiles',
         ]);
     }
@@ -97,8 +120,9 @@ class PageController extends Controller
             $profiles = collect();
             $profile = null;
         }
+        $customers = $this->presentCustomers($this->customersForProfile($profile), $profiles, $profile);
         return view('modules.customers', [
-            'customers' => collect(),
+            'customers' => $customers,
             'profiles' => $profiles,
             'activeProfile' => $profile,
             'pageTitle' => 'Customers',
@@ -116,8 +140,25 @@ class PageController extends Controller
             $taxSlabs = collect();
             $profile = null;
         }
+        $products = $profile
+            ? Product::query()
+                ->where('business_profile_id', $profile->id)
+                ->get()
+                ->map(fn (Product $product): array => [
+                    'id' => (string) $product->id,
+                    'business_profile_id' => (string) $product->business_profile_id,
+                    'name' => $product->name,
+                    'hsn_code' => $product->hsn_code,
+                    'description' => $product->description,
+                    'unit_price' => $product->unit_price,
+                    'unit' => $product->unit,
+                    'tax_rate' => $product->tax_rate,
+                    'status' => $product->status,
+                ])
+                ->values()
+            : collect();
         return view('modules.products', [
-            'products' => collect(),
+            'products' => $products,
             'profiles' => $profiles,
             'activeProfile' => $profile,
             'taxSlabs' => $taxSlabs,

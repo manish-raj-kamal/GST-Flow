@@ -242,6 +242,11 @@
                         return;
                     }
 
+                    if (this.products.length > 0) {
+                        gst.writeCache(productsCacheKey, this.products);
+                        return;
+                    }
+
                     const cached = gst.readCache(productsCacheKey, 300000);
                     if (Array.isArray(cached) && cached.length > 0) {
                         this.products = cached;
@@ -253,7 +258,7 @@
                         this.products = res?.data || [];
                         gst.writeCache(productsCacheKey, this.products);
                     } catch (e) {
-                        gst.toast(e.message || 'Unable to load products', 'error');
+                        if (!this.products.length) gst.toast(e.message || 'Unable to load products', 'error');
                     }
                     this.loading = false;
                 },
