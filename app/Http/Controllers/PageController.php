@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\BusinessProfile;
 use App\Models\Customer;
+use App\Models\HsnCode;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\StateCode;
@@ -168,8 +170,13 @@ class PageController extends Controller
 
     public function hsnCodes(): View
     {
+        try {
+            $codes = HsnCode::query()->get()->values();
+        } catch (Throwable) {
+            $codes = collect();
+        }
         return view('modules.hsn-codes', [
-            'codes' => collect(),
+            'codes' => $codes,
             'pageTitle' => 'HSN Codes',
         ]);
     }
@@ -286,8 +293,18 @@ class PageController extends Controller
 
     public function activityLogs(Request $request): View
     {
+        try {
+            $logs = ActivityLog::query()
+                ->latest()
+                ->get()
+                ->filter(fn (ActivityLog $log) => $request->user()->isAdmin() || $log->user_id === $request->user()->id)
+                ->take(100)
+                ->values();
+        } catch (Throwable) {
+            $logs = collect();
+        }
         return view('modules.activity-logs', [
-            'logs' => collect(),
+            'logs' => $logs,
             'pageTitle' => 'Activity Logs',
         ]);
     }

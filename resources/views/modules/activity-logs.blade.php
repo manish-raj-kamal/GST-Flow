@@ -63,6 +63,10 @@
                 logs: @js($logs),
                 loading: false,
                 async loadLogs() {
+                    if (this.logs.length > 0) {
+                        gst.writeCache(cacheKey, this.logs);
+                        return;
+                    }
                     const cached = gst.readCache(cacheKey, 120000);
                     if (Array.isArray(cached) && cached.length > 0) {
                         this.logs = cached;
@@ -73,7 +77,7 @@
                         this.logs = res?.data || [];
                         gst.writeCache(cacheKey, this.logs);
                     } catch (e) {
-                        gst.toast(e.message || 'Unable to load activity logs', 'error');
+                        if (!this.logs.length) gst.toast(e.message || 'Unable to load activity logs', 'error');
                     }
                     this.loading = false;
                 },

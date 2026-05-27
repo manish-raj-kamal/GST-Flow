@@ -355,6 +355,10 @@
                     @endif
                 },
                 async reloadCodes() {
+                    if (this.codes.length > 0) {
+                        gst.writeCache(codesCacheKey, this.codes);
+                        return;
+                    }
                     const cached = gst.readCache(codesCacheKey, 300000);
                     if (Array.isArray(cached) && cached.length > 0) {
                         this.codes = cached;
@@ -365,7 +369,7 @@
                         this.codes = res.data || [];
                         gst.writeCache(codesCacheKey, this.codes);
                     } catch (e) {
-                        gst.toast(e.message || 'Unable to load HSN codes', 'error');
+                        if (!this.codes.length) gst.toast(e.message || 'Unable to load HSN codes', 'error');
                     }
                     this.loadingTable = false;
                 },
